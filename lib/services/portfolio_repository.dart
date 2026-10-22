@@ -1,0 +1,130 @@
+import 'package:flutter/foundation.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import '../models/account.dart';
+import '../models/dividend.dart';
+import '../models/holding_record.dart';
+import '../models/trade.dart';
+import 'csv_import.dart';
+import 'demo_data.dart';
+
+/// Local storage for the POC. Everything is saved as plain JSON maps in
+/// Hive boxes (no type adapters, so no build_runner step), and kept in
+/// memory as lists that screens listen to.
+///
+/// Later, an API-backed implementation can replace this class without the
+/// screens changing: they only ever read the lists and call these methods.
+class PortfolioRepository extends ChangeNotifier {
+  late final Box<dynamic> _accountsBox;
+  late final Box<dynamic> _holdingsBox;
+  late final Box<dynamic> _tradesBox;
+  late final Box<dynamic> _dividendsBox;
+
+  List<Account> accounts = [];
+  List<HoldingRecord> holdings = [];
+  List<Trade> trades = [];
+  List<Dividend> dividends = [];
+
+  Future<void> init() async {
+    await Hive.initFlutter();
+    _accountsBox = await Hive.openBox<dynamic>('accounts');
+    _holdingsBox = await Hive.openBox<dynamic>('holdings');
+    _tradesBox = await Hive.openBox<dynamic>('trades');
+    _dividendsBox = await Hive.openBox<dynamic>('dividends');
+    _reload();
+  }
+
+  Map<String, dynamic> _asMap(dynamic v) => Map<String, dynamic>.from(v as Map);
+
+  void _reload() {
+    accounts = _accountsBox.values.map((e) => Account.fromJson(_asMap(e))).toList()
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    holdings = _holdingsBox.values.map((e) => HoldingRecord.fromJson(_asMap(e))).toList();
+    trades = _tradesBox.values.map((e) => Trade.fromJson(_asMap(e))).toList();
+    dividends = _dividendsBox.values.map((e) => Dividend.fromJson(_asMap(e))).toList();
+  }
+
+  Future<void> _changed() async {
+    _reload();
+    notifyListeners();
+  }
+
+  HoldingRecord? holdingFor(String accountId, String symbol) {
+    final key = HoldingRecord.keyOf(accountId, symbol);
+    for (final h in holdings) {
+      if (h.key == key) return h;
+    }
+    return null;
+  }
+
+  /// Writes everything from a CSV import in one go (one reload, one notify).
+  Future<void> applyImport(ImportPlan plan) async {
+    for (final a in plan.newAccounts) {
+      await _accountsBox.put(a.id, a.toJson());
+    }
+    for (final h in plan.holdingUpserts) {
+      await _holdingsBox.put(h.id, h.toJson());
+    }
+    for (final t in plan.trades) {
+      await _tradesBox.put(t.id, t.toJson());
+    }
+    for (final d in plan.dividends) {
+      await _dividendsBox.put(d.id, d.toJson());
+    }
+    await _changed();
+  }
+
+  Future<void> putAccount(Account a) async {
+    await _accountsBox.put(a.id, a.toJson());
+    await _changed();
+  }
+
+  Future<void> putHolding(HoldingRecord h) async {
+    await _holdingsBox.put(h.id, h.toJson());
+    await _changed();
+  }
+
+  Future<void> putTrade(Trade t) async {
+    await _tradesBox.put(t.id, t.toJson());
+    await _changed();
+  }
+
+  Future<void> putDividend(Dividend d) async {
+    await _dividendsBox.put(d.id, d.toJson());
+    await _changed();
+  }
+
+  Future<void> deleteTrade(String id) async {
+    await _tradesBox.delete(id);
+    await _changed();
+  }
+
+  Future<void> deleteDividend(String id) async {
+    await _dividendsBox.delete(id);
+    await _changed();
+  }
+
+  Future<void> loadDemo() async {
+    final demo = DemoData.build();
+    for (final a in demo.accounts) {
+      await _accountsBox.put(a.id, a.toJson());
+    }
+    for (final h in demo.holdings) {
+      await _holdingsBox.put(h.id, h.toJson());
+    }
+    for (final t in demo.trades) {
+      await _tradesBox.put(t.id, t.toJson());
+    }
+    for (final d in demo.dividends) {
+      await _dividendsBox.put(d.id, d.toJson());
+    }
+    await _changed();
+  }
+
+  Future<void> clearAll() async {
+    await _accountsBox.clear();
+    await _holdingsBox.clear();
+    await _tradesBox.clear();
+    await _dividendsBox.clear();
+    await _changed();
+  }
+}

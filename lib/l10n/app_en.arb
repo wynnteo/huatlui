@@ -1,0 +1,233 @@
+{
+  "@@locale": "en",
+  "appTitle": "HuatLui",
+  "navDashboard": "Dashboard",
+  "navHoldings": "Holdings",
+  "navAllocation": "Allocation",
+  "navTransactions": "Transactions",
+  "navMore": "More",
+  "totalReturn": "Total Return",
+  "capitalGain": "Capital Gain",
+  "dividendIncome": "Dividend Income",
+  "portfolioValue": "Portfolio Value",
+  "totalInvested": "Total Invested",
+  "recentTransactions": "Recent transactions",
+  "dashboardEmptyTitle": "No investments yet",
+  "dashboardEmptyBody": "Add your first buy, or load sample data to see how HuatLui works.",
+  "loadDemoData": "Load sample data",
+  "clearAllData": "Clear all data",
+  "clearAllDataConfirm": "This permanently deletes every account, holding, transaction and dividend on this device.",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "deleteEntryTitle": "Delete this entry?",
+  "holdingsEmpty": "No open positions.",
+  "transactionsEmpty": "No transactions yet.",
+  "allocationEmpty": "Nothing to allocate yet.",
+  "buy": "Buy",
+  "sell": "Sell",
+  "dividend": "Dividend",
+  "addTransaction": "Add transaction",
+  "addDividend": "Add dividend",
+  "groupAssetClass": "Asset class",
+  "groupAccount": "Account",
+  "groupCurrency": "Currency",
+  "groupHolding": "Holding",
+  "assetClassStock": "Stock",
+  "assetClassEtf": "ETF",
+  "assetClassUnitTrust": "Unit trust",
+  "assetClassReit": "REIT",
+  "assetClassBond": "Bond",
+  "assetClassCash": "Cash",
+  "assetClassOther": "Other",
+  "currentAllocation": "Current",
+  "targetAllocation": "Target",
+  "targetPct": "Target {pct}%",
+  "@targetPct": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "noTargetSet": "No target set",
+  "concentrationRiskTitle": "Concentration risk",
+  "needAttention": "{count} to review",
+  "@needAttention": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "concentrationRiskOverTarget": "{label} is {current}% of your portfolio, above your {target}% target.",
+  "@concentrationRiskOverTarget": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "current": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "concentrationRiskUnderTarget": "{label} is {current}% of your portfolio, below your {target}% target.",
+  "@concentrationRiskUnderTarget": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "current": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "concentrationRiskAbsolute": "{label} is {current}% of your portfolio. A single holding this large adds concentration risk.",
+  "@concentrationRiskAbsolute": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "current": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsBaseCurrency": "Base currency",
+  "settingsTheme": "Theme",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsThemeSystem": "Match system",
+  "settingsLanguage": "Language",
+  "settingsData": "Data",
+  "shownInBaseCurrency": "Shown in {currency}",
+  "@shownInBaseCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "addEntry": "Add entry",
+  "fieldAccount": "Account",
+  "newAccountOption": "New account…",
+  "fieldNewAccountName": "New account name",
+  "createAccountHint": "e.g. Tiger Brokers",
+  "fieldSymbol": "Symbol",
+  "symbolHint": "e.g. AAPL, D05.SI",
+  "fieldName": "Name (optional)",
+  "fieldAssetClass": "Asset class",
+  "fieldCurrency": "Currency",
+  "fieldDate": "Date",
+  "fieldQuantity": "Quantity",
+  "fieldPrice": "Price per unit",
+  "fieldFees": "Fees (commission etc.)",
+  "fieldGrossAmount": "Dividend amount (before tax)",
+  "fieldWithholdingTax": "Withholding tax",
+  "fieldFxRate": "FX rate",
+  "fxRateHelp": "1 {currency} = ? {base}. Pre-filled with today's built-in rate; change it to the rate on the trade date for an exact cost.",
+  "@fxRateHelp": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      },
+      "base": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldNotes": "Notes (optional)",
+  "save": "Save",
+  "pickHoldingHint": "Pick an existing holding",
+  "errAccountRequired": "Choose an account or enter a new account name.",
+  "errSymbolRequired": "Enter a symbol.",
+  "errNumber": "Enter a valid number for {field}.",
+  "@errNumber": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "errOnlyHold": "You only hold {qty} of {symbol} in this account.",
+  "@errOnlyHold": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      },
+      "symbol": {
+        "type": "String"
+      }
+    }
+  },
+  "errDividendNeedsHolding": "To record a dividend, pick a holding you already own.",
+  "errFxRate": "Enter a valid FX rate.",
+  "editHoldingTitle": "Update {symbol}",
+  "@editHoldingTitle": {
+    "placeholders": {
+      "symbol": {
+        "type": "String"
+      }
+    }
+  },
+  "currentPriceLabel": "Current price ({currency})",
+  "@currentPriceLabel": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "targetPctLabel": "Target % of portfolio (blank = none)",
+  "holdingsTapHint": "Tap a holding to update its price or target.",
+  "importCsv": "Import from CSV",
+  "copyCsvTemplate": "Copy CSV template",
+  "templateCopied": "Template copied. Paste it into Excel or Google Sheets.",
+  "importPreviewTitle": "Ready to import",
+  "importSummary": "{trades} trades, {dividends} dividends, {accounts} new accounts",
+  "@importSummary": {
+    "placeholders": {
+      "trades": {
+        "type": "String"
+      },
+      "dividends": {
+        "type": "String"
+      },
+      "accounts": {
+        "type": "String"
+      }
+    }
+  },
+  "importSkipped": "{count} duplicates skipped",
+  "@importSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "importErrors": "{count} rows have problems and will be skipped:",
+  "@importErrors": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "importNothing": "Nothing to import.",
+  "importConfirm": "Import",
+  "importDone": "Import finished.",
+  "importFailed": "Couldn't read that file: {reason}",
+  "@importFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  }
+}
