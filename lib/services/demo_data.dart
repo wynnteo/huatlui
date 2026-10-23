@@ -6,7 +6,7 @@ import '../models/holding_record.dart';
 import '../models/trade.dart';
 
 /// Sample portfolio so every screen has something to show: three
-/// currencies (SGD / USD / MYR), two brokers, a partial sell, dividends
+/// currencies (SGD / USD / MYR), two brokers, a unit trust, a partial sell, dividends
 /// with withholding tax, and some target weights (including a deliberately
 /// off-target one so the concentration warnings light up).
 class DemoData {
@@ -43,6 +43,7 @@ class DemoData {
       h(tiger, 'D05.SI', 'DBS Group', AssetClass.stock, 'SGD', 38.4, target: 25),
       h(ibkr, 'VWRA.L', 'Vanguard FTSE All-World', AssetClass.etf, 'USD', 130.0, target: 40),
       h(ibkr, '1155.KL', 'Maybank', AssetClass.stock, 'MYR', 10.1, target: 15),
+      h(tiger, 'LU0320765646', 'Global Dividend Fund (sample unit trust)', AssetClass.unitTrust, 'SGD', 1.31),
     ];
 
     Trade t(Account a, String symbol, TradeType type, DateTime date, double qty, double price, String ccy, double fx,
@@ -72,6 +73,8 @@ class DemoData {
       t(tiger, 'D05.SI', TradeType.sell, DateTime(2026, 1, 15), 50, 38.0, 'SGD', 1.0, fee: 3),
       t(ibkr, 'VWRA.L', TradeType.buy, DateTime(2025, 4, 8), 20, 118, 'USD', 1.33, fee: 1.5),
       t(ibkr, '1155.KL', TradeType.buy, DateTime(2025, 5, 20), 500, 9.4, 'MYR', 0.29, fee: 8),
+      t(tiger, 'LU0320765646', TradeType.buy, DateTime(2025, 6, 10), 1000, 1.20, 'SGD', 1.0),
+      t(tiger, 'LU0320765646', TradeType.buy, DateTime(2025, 12, 1), 500, 1.25, 'SGD', 1.0),
     ];
 
     Dividend d(Account a, String symbol, String ccy, double fx, double gross, double tax, DateTime date) => Dividend(
@@ -91,6 +94,7 @@ class DemoData {
       d(tiger, 'D05.SI', 'SGD', 1.0, 150, 0, DateTime(2025, 8, 12)),
       d(tiger, 'AAPL', 'USD', 1.30, 12, 3.6, DateTime(2025, 11, 14)),
       d(ibkr, '1155.KL', 'MYR', 0.30, 90, 0, DateTime(2025, 9, 30)),
+      d(tiger, 'LU0320765646', 'SGD', 1.0, 38, 0, DateTime(2026, 3, 31)),
     ];
 
     return DemoData([tiger, ibkr], holdings, trades, dividends);

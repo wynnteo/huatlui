@@ -17,18 +17,37 @@ dependencies:
   shared_preferences: ^2.2.2
   intl: any
   uuid: ^4.2.1
+  http: ^1.2.2
+  local_auth: ^2.3.0
 
   file_picker: ^10.3.10
   hive: ^2.2.3
   hive_flutter: ^1.1.0
 
-  # Later: http or dio for the API-backed sync layer and live FX rates.
+  # Later: live FX rates and the API-backed sync layer.
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.4.1
 
 flutter:
   uses-material-design: true
-  generate: true  # turns on gen-l10n, reads l10n.yaml, builds AppLocalizations from the .arb files
+  generate: true
+
+  assets:
+    - assets/icons/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  remove_alpha_ios: true
+
+flutter_native_splash:
+  color: "#FAFAF8"
+  image: assets/icons/app_icon_tran.png
+  color_dark: "#0D0E10"
+  image_dark: assets/icons/app_icon_tran.png

@@ -107,7 +107,7 @@ abstract class AppLocalizations {
   /// No description provided for @navDashboard.
   ///
   /// In en, this message translates to:
-  /// **'Dashboard'**
+  /// **'Overview'**
   String get navDashboard;
 
   /// No description provided for @navHoldings.
@@ -125,7 +125,7 @@ abstract class AppLocalizations {
   /// No description provided for @navTransactions.
   ///
   /// In en, this message translates to:
-  /// **'Transactions'**
+  /// **'Activity'**
   String get navTransactions;
 
   /// No description provided for @navMore.
@@ -687,6 +687,582 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t read that file: {reason}'**
   String importFailed(String reason);
+
+  /// No description provided for @navInsights.
+  ///
+  /// In en, this message translates to:
+  /// **'Insights'**
+  String get navInsights;
+
+  /// No description provided for @navSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get navSettings;
+
+  /// No description provided for @settingsAppearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settingsAppearance;
+
+  /// No description provided for @settingsRegion.
+  ///
+  /// In en, this message translates to:
+  /// **'Region'**
+  String get settingsRegion;
+
+  /// No description provided for @settingsThemeAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get settingsThemeAuto;
+
+  /// No description provided for @insightsHighlights.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlights'**
+  String get insightsHighlights;
+
+  /// No description provided for @insightsMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More insights'**
+  String get insightsMore;
+
+  /// No description provided for @insightsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a few transactions to see insights.'**
+  String get insightsEmpty;
+
+  /// No description provided for @tabPerformance.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance'**
+  String get tabPerformance;
+
+  /// No description provided for @tabIncome.
+  ///
+  /// In en, this message translates to:
+  /// **'Income'**
+  String get tabIncome;
+
+  /// No description provided for @returnByHolding.
+  ///
+  /// In en, this message translates to:
+  /// **'Capital gain by holding'**
+  String get returnByHolding;
+
+  /// No description provided for @investedByMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Invested by month'**
+  String get investedByMonth;
+
+  /// No description provided for @dividendsByMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Dividends by month'**
+  String get dividendsByMonth;
+
+  /// No description provided for @byHolding.
+  ///
+  /// In en, this message translates to:
+  /// **'By holding'**
+  String get byHolding;
+
+  /// No description provided for @breakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakdown'**
+  String get breakdown;
+
+  /// No description provided for @unrealisedGain.
+  ///
+  /// In en, this message translates to:
+  /// **'Unrealised gain'**
+  String get unrealisedGain;
+
+  /// No description provided for @realisedGain.
+  ///
+  /// In en, this message translates to:
+  /// **'Realised gain'**
+  String get realisedGain;
+
+  /// No description provided for @feesPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Fees paid'**
+  String get feesPaid;
+
+  /// No description provided for @holdingsInProfit.
+  ///
+  /// In en, this message translates to:
+  /// **'Holdings in profit'**
+  String get holdingsInProfit;
+
+  /// No description provided for @winRateValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} of {total}'**
+  String winRateValue(String count, String total);
+
+  /// No description provided for @dividendsTtm.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 12 months'**
+  String get dividendsTtm;
+
+  /// No description provided for @yieldOnCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Yield on cost'**
+  String get yieldOnCost;
+
+  /// No description provided for @incomeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No dividends recorded yet.'**
+  String get incomeEmpty;
+
+  /// No description provided for @insightTopContributor.
+  ///
+  /// In en, this message translates to:
+  /// **'{symbol} contributes most to your capital gain: {amount}, {share}% of total gains.'**
+  String insightTopContributor(String symbol, String amount, String share);
+
+  /// No description provided for @insightBiggestDrag.
+  ///
+  /// In en, this message translates to:
+  /// **'{symbol} is your biggest drag on capital gain: {amount}.'**
+  String insightBiggestDrag(String symbol, String amount);
+
+  /// No description provided for @insightConcentration.
+  ///
+  /// In en, this message translates to:
+  /// **'Your top {count} holdings make up {pct}% of the portfolio.'**
+  String insightConcentration(String count, String pct);
+
+  /// No description provided for @insightDividends.
+  ///
+  /// In en, this message translates to:
+  /// **'Dividends so far this year came to {amount}, a {yieldPct}% yield on cost.'**
+  String insightDividends(String amount, String yieldPct);
+
+  /// No description provided for @insightCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'{pct}% of your portfolio is held in {currency}.'**
+  String insightCurrency(String pct, String currency);
+
+  /// No description provided for @insightFees.
+  ///
+  /// In en, this message translates to:
+  /// **'You have paid {amount} in fees, {pct}% of the amount you have invested.'**
+  String insightFees(String amount, String pct);
+
+  /// No description provided for @rangeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get rangeAll;
+
+  /// No description provided for @chartValueVsCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Value vs cost'**
+  String get chartValueVsCost;
+
+  /// No description provided for @chartValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Value'**
+  String get chartValue;
+
+  /// No description provided for @chartCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Cost'**
+  String get chartCost;
+
+  /// No description provided for @chartNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Past values use today\'s exchange rates. Unit trusts fill in as you refresh prices.'**
+  String get chartNote;
+
+  /// No description provided for @chartNeedsData.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough history yet. Pull down on Overview or Holdings to refresh prices.'**
+  String get chartNeedsData;
+
+  /// No description provided for @chartTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get chartTotal;
+
+  /// No description provided for @dividendsYoY.
+  ///
+  /// In en, this message translates to:
+  /// **'This year vs last year'**
+  String get dividendsYoY;
+
+  /// No description provided for @incomeSources.
+  ///
+  /// In en, this message translates to:
+  /// **'Income sources'**
+  String get incomeSources;
+
+  /// No description provided for @othersLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get othersLabel;
+
+  /// No description provided for @pricesUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Prices updated {when}'**
+  String pricesUpdated(String when);
+
+  /// No description provided for @pricesNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Prices not updated yet'**
+  String get pricesNever;
+
+  /// No description provided for @pricesUpdating.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating prices…'**
+  String get pricesUpdating;
+
+  /// No description provided for @pricesRefreshResult.
+  ///
+  /// In en, this message translates to:
+  /// **'{updated} updated, {failed} failed'**
+  String pricesRefreshResult(String updated, String failed);
+
+  /// No description provided for @pricesFundSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} unit trust(s) skipped. Set the fund price API first.'**
+  String pricesFundSkipped(String count);
+
+  /// No description provided for @settingsPrices.
+  ///
+  /// In en, this message translates to:
+  /// **'Prices'**
+  String get settingsPrices;
+
+  /// No description provided for @refreshPrices.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh prices'**
+  String get refreshPrices;
+
+  /// No description provided for @fundApiUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Fund price API'**
+  String get fundApiUrl;
+
+  /// No description provided for @fundApiUrlHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://your-app.vercel.app'**
+  String get fundApiUrlHint;
+
+  /// No description provided for @fundApiNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get fundApiNotSet;
+
+  /// No description provided for @fundApiHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Web address of your web app. Unit trust prices come from its /api/fund-quote.'**
+  String get fundApiHelp;
+
+  /// No description provided for @assetClassCrypto.
+  ///
+  /// In en, this message translates to:
+  /// **'Crypto'**
+  String get assetClassCrypto;
+
+  /// No description provided for @exportCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Export CSV'**
+  String get exportCsv;
+
+  /// No description provided for @exportEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to export yet.'**
+  String get exportEmpty;
+
+  /// No description provided for @exportDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Exported {count} rows.'**
+  String exportDone(String count);
+
+  /// No description provided for @exportCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'No file dialog available. The CSV was copied to the clipboard instead.'**
+  String get exportCopied;
+
+  /// No description provided for @filterDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get filterDate;
+
+  /// No description provided for @filterType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get filterType;
+
+  /// No description provided for @filterBroker.
+  ///
+  /// In en, this message translates to:
+  /// **'Broker'**
+  String get filterBroker;
+
+  /// No description provided for @filterClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset class'**
+  String get filterClass;
+
+  /// No description provided for @filterClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get filterClear;
+
+  /// No description provided for @rangeAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get rangeAllTime;
+
+  /// No description provided for @rangeThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get rangeThisMonth;
+
+  /// No description provided for @rangeLast30.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30 days'**
+  String get rangeLast30;
+
+  /// No description provided for @rangeThisYear.
+  ///
+  /// In en, this message translates to:
+  /// **'This year'**
+  String get rangeThisYear;
+
+  /// No description provided for @rangeLastYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Last year'**
+  String get rangeLastYear;
+
+  /// No description provided for @rangeCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom range…'**
+  String get rangeCustom;
+
+  /// No description provided for @filterNoMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions match these filters.'**
+  String get filterNoMatch;
+
+  /// No description provided for @filterBrokersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} brokers'**
+  String filterBrokersCount(String count);
+
+  /// No description provided for @filterClassesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} classes'**
+  String filterClassesCount(String count);
+
+  /// No description provided for @filterTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} transactions'**
+  String filterTransactions(String count);
+
+  /// No description provided for @summaryBought.
+  ///
+  /// In en, this message translates to:
+  /// **'Bought'**
+  String get summaryBought;
+
+  /// No description provided for @summarySold.
+  ///
+  /// In en, this message translates to:
+  /// **'Sold'**
+  String get summarySold;
+
+  /// No description provided for @priceNotUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Price not updated'**
+  String get priceNotUpdated;
+
+  /// No description provided for @priceAsOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Price as of {date}'**
+  String priceAsOf(String date);
+
+  /// No description provided for @fundApiMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit trust prices need the fund price API. Set it in Settings → Prices.'**
+  String get fundApiMissing;
+
+  /// No description provided for @pricesFailedList.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not price: {symbols}'**
+  String pricesFailedList(String symbols);
+
+  /// No description provided for @lockedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'HuatLui is locked'**
+  String get lockedTitle;
+
+  /// No description provided for @unlockButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock'**
+  String get unlockButton;
+
+  /// No description provided for @unlockReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock HuatLui to view your portfolio'**
+  String get unlockReason;
+
+  /// No description provided for @settingsSecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get settingsSecurity;
+
+  /// No description provided for @settingsLock.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric unlock'**
+  String get settingsLock;
+
+  /// No description provided for @settingsLockHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses your fingerprint, face, or the phone’s screen lock. HuatLui locks again after 30 seconds in the background.'**
+  String get settingsLockHelp;
+
+  /// No description provided for @lockUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up a fingerprint, face or screen lock on this phone first.'**
+  String get lockUnavailable;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get filterAll;
+
+  /// No description provided for @byAssetClass.
+  ///
+  /// In en, this message translates to:
+  /// **'By asset class'**
+  String get byAssetClass;
+
+  /// No description provided for @incomeYearLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{year} dividends'**
+  String incomeYearLabel(String year);
+
+  /// No description provided for @incomeLastYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Last year {amount}'**
+  String incomeLastYear(String amount);
+
+  /// No description provided for @incomeEmptyYear.
+  ///
+  /// In en, this message translates to:
+  /// **'No dividends in {year}.'**
+  String incomeEmptyYear(String year);
+
+  /// No description provided for @chartHowLink.
+  ///
+  /// In en, this message translates to:
+  /// **'How is this calculated?'**
+  String get chartHowLink;
+
+  /// No description provided for @chartHowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How value and cost are calculated'**
+  String get chartHowTitle;
+
+  /// No description provided for @chartHowCostTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cost (dashed line)'**
+  String get chartHowCostTitle;
+
+  /// No description provided for @chartHowCostBody.
+  ///
+  /// In en, this message translates to:
+  /// **'What you paid for the holdings you still own. Each buy adds quantity × price plus fees, converted at that trade’s own exchange rate. A sale removes the same share of the cost (average-cost method), so fully sold positions drop out.'**
+  String get chartHowCostBody;
+
+  /// No description provided for @chartHowValueTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Value (solid line)'**
+  String get chartHowValueTitle;
+
+  /// No description provided for @chartHowValueBody.
+  ///
+  /// In en, this message translates to:
+  /// **'For each day: the units you held that day (rebuilt from your transactions) × that day’s closing price, converted at today’s exchange rate. Weekends and holidays reuse the last close. Unit trusts have no price history, so they step between your trade prices and the prices fetched since you started refreshing.'**
+  String get chartHowValueBody;
+
+  /// No description provided for @chartHowGapTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The gap between them'**
+  String get chartHowGapTitle;
+
+  /// No description provided for @chartHowGapBody.
+  ///
+  /// In en, this message translates to:
+  /// **'That is your unrealised gain or loss. Dividends and gains already locked in by selling are not in this chart; see Breakdown below and the Income tab.'**
+  String get chartHowGapBody;
 }
 
 class _AppLocalizationsDelegate

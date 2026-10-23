@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'app_scope.dart';
 import 'l10n/app_localizations.dart';
+import 'screens/app_lock.dart';
 import 'screens/main_shell.dart';
 import 'theme/app_theme.dart';
 
@@ -10,6 +11,8 @@ Future<void> main() async {
   await settings.load();
   await repo.init();
   runApp(const HuatLuiApp());
+  // After the first frame, quietly refresh prices if they are stale.
+  prices.refreshIfStale();
 }
 
 class HuatLuiApp extends StatelessWidget {
@@ -37,6 +40,8 @@ class HuatLuiApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: const [Locale('en'), Locale('zh')],
+          // The lock overlay covers every screen, including pushed ones.
+          builder: (context, child) => AppLock(child: child ?? const SizedBox.shrink()),
           home: const MainShell(),
         );
       },

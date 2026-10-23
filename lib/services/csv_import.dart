@@ -97,15 +97,19 @@ class _Draft {
 }
 
 class CsvImporter {
-  /// One row per event. Required columns: date, type, symbol, currency.
-  static const templateCsv = 'date,type,account,symbol,name,asset_class,currency,quantity,price,fees,amount,tax,fx_rate,current_price,target_pct,notes\n'
-      '2025-02-03,BUY,Tiger Brokers,D05.SI,DBS Group,stock,SGD,200,33.50,5.00,,,1,38.40,25,\n'
-      '2025-03-10,BUY,Tiger Brokers,AAPL,Apple Inc.,stock,USD,10,170.00,1.00,,,1.34,215.00,20,First buy\n'
-      '2025-09-02,BUY,Tiger Brokers,AAPL,,,USD,5,190.00,1.00,,,1.29,,,\n'
-      '2026-01-15,SELL,Tiger Brokers,D05.SI,,,SGD,50,38.00,3.00,,,1,,,\n'
-      '2025-11-14,DIVIDEND,Tiger Brokers,AAPL,,,USD,,,,12.00,3.60,1.30,,,\n'
-      '2025-04-08,BUY,Interactive Brokers,VWRA.L,Vanguard FTSE All-World,etf,USD,20,118.00,1.50,,,1.33,130.00,40,\n'
-      '2025-05-20,BUY,Interactive Brokers,1155.KL,Maybank,stock,MYR,500,9.40,8.00,,,0.29,10.10,15,\n';
+  /// The file format is the same one the web app exports (Transactions ->
+  /// Export to CSV), so a file can move between the two apps in either
+  /// direction. One row per event. Required columns: Date, Type, Symbol,
+  /// Currency. Column order does not matter and header case/spaces are
+  /// ignored. The backup extras that Export adds (FX Rate, FX Base,
+  /// Withholding Tax, Target %, Current Price, Asset Type) are read back when
+  /// present. "Dividend Amount" is the amount actually received; if a
+  /// Withholding Tax is given, gross = amount + tax.
+  static const templateCsv = 'Date,Type,Symbol,Product Name,Category,Broker,Currency,Quantity,Price,Commission,Dividend Amount,Total Value,Notes\n'
+      '2026-10-20,BUY,K71U.SI,Keppel Reit,Stocks,CMC Invest,SGD,1000,0.795,0.32,,795.32,\n'
+      '2026-10-18,BUY,VWRA.L,VANGUARD FTSE ALL-WORLD UCITS ETF USD ACCUMULATION,ETF,FSMOne,USD,6.4577,191.543,0,,1236.93,\n'
+      '2026-10-15,SELL,558.SI,UMS,Stocks,CMC Invest,SGD,500,2.4,0.5,,1199.5,\n'
+      '2026-10-18,DIVIDEND,SG9999007991:SGD,Schroder Asian Income A DIS SGD,Unit Trusts,HSBC,SGD,,,,60.68,60.68,\n';
 
   static const _aliases = <String, String>{
     'date': 'date', 'trade_date': 'date', 'tradedate': 'date',
@@ -118,7 +122,11 @@ class CsvImporter {
     'quantity': 'quantity', 'qty': 'quantity', 'units': 'quantity', 'shares': 'quantity',
     'price': 'price', 'trade_price': 'price',
     'fees': 'fees', 'fee': 'fees', 'commission': 'fees',
-    'amount': 'amount', 'dividend_amount': 'amount', 'dividend': 'amount',
+    'amount': 'amount', 'dividend_amount': 'amount', 'dividendamount': 'amount', 'dividend': 'amount',
+    'total_value': 'total_value', 'totalvalue': 'total_value',
+    'fx_base': 'fx_base', 'fxbase': 'fx_base',
+    'asset_type': 'asset_type', 'assettype': 'asset_type',
+    'target_%': 'target_pct',
     'tax': 'tax', 'withholding_tax': 'tax', 'withholdingtax': 'tax',
     'fx_rate': 'fx_rate', 'fxrate': 'fx_rate', 'fx': 'fx_rate',
     'current_price': 'current_price', 'currentprice': 'current_price',
@@ -169,6 +177,10 @@ class CsvImporter {
       case 'bond':
       case 'bonds':
         return AssetClass.bond;
+      case 'crypto':
+      case 'cryptocurrency':
+      case 'cryptocurrencies':
+        return AssetClass.crypto;
       case 'cash':
         return AssetClass.cash;
     }
@@ -224,9 +236,13 @@ class CsvImporter {
       for (final t in existingTrades)
         '${t.accountId}|${t.symbol.toUpperCase()}|${t.type.name}|${dayKey(t.tradeDate)}|${t.quantity.toStringAsFixed(6)}|${t.price.toStringAsFixed(6)}'
     };
+    // A dividend can legitimately arrive as the gross amount (older files) or
+    // the net amount received (this export format), so match on either.
     final divKeys = <String>{
-      for (final d in existingDividends)
-        '${d.accountId}|${d.symbol.toUpperCase()}|${dayKey(d.paymentDate)}|${d.grossAmount.toStringAsFixed(6)}'
+      for (final d in existingDividends) ...[
+        '${d.accountId}|${d.symbol.toUpperCase()}|${dayKey(d.paymentDate)}|${d.grossAmount.toStringAsFixed(6)}',
+        '${d.accountId}|${d.symbol.toUpperCase()}|${dayKey(d.paymentDate)}|${d.netAmount.toStringAsFixed(6)}',
+      ]
     };
 
     final errors = <ImportError>[];
@@ -262,6 +278,7 @@ class CsvImporter {
       }
 
       double fxRate;
+      var fxBaseUsed = baseCurrency;
       final fxRaw = cell(row, 'fx_rate');
       if (fxRaw.isEmpty) {
         fxRate = fx.rate(currency, baseCurrency);
@@ -272,13 +289,15 @@ class CsvImporter {
           continue;
         }
         fxRate = v;
+        final fb = cell(row, 'fx_base').toUpperCase();
+        if (fb.isNotEmpty) fxBaseUsed = fb; // the rate is against the base it was recorded in
       }
 
       double qty = 0, price = 0, fees = 0, amount = 0, tax = 0;
       if (type == 'dividend') {
         final a = parseNumber(cell(row, 'amount'));
         if (a == null || a <= 0) {
-          bad('amount must be a positive number for a dividend');
+          bad('Dividend Amount must be a positive number for a dividend');
           continue;
         }
         amount = a;
@@ -293,10 +312,24 @@ class CsvImporter {
         }
       } else {
         final q = parseNumber(cell(row, 'quantity'));
-        final p = parseNumber(cell(row, 'price'));
         if (q == null || q <= 0) {
           bad('quantity must be a positive number');
           continue;
+        }
+        final feeRaw = cell(row, 'fees');
+        if (feeRaw.isNotEmpty) {
+          final fv = parseNumber(feeRaw);
+          if (fv == null || fv < 0) {
+            bad('commission must be a number');
+            continue;
+          }
+          fees = fv;
+        }
+        var p = parseNumber(cell(row, 'price'));
+        if (p == null) {
+          // Some exports only carry Total Value: work the unit price back from it.
+          final total = parseNumber(cell(row, 'total_value'));
+          if (total != null && total > 0) p = (type == 'buy' ? total - fees : total + fees) / q;
         }
         if (p == null || p < 0) {
           bad('price must be a number');
@@ -304,15 +337,6 @@ class CsvImporter {
         }
         qty = q;
         price = p;
-        final feeRaw = cell(row, 'fees');
-        if (feeRaw.isNotEmpty) {
-          final fv = parseNumber(feeRaw);
-          if (fv == null || fv < 0) {
-            bad('fees must be a number');
-            continue;
-          }
-          fees = fv;
-        }
       }
 
       final accName = cell(row, 'account').isEmpty ? 'Default' : cell(row, 'account');
@@ -351,8 +375,8 @@ class CsvImporter {
           symbol: symbol,
           currency: currency,
           fxRate: fxRate,
-          fxBase: baseCurrency,
-          grossAmount: amount,
+          fxBase: fxBaseUsed,
+          grossAmount: amount + tax, // amount is what was received; tax was already taken off
           withholdingTax: tax,
           paymentDate: date,
           notes: note,
@@ -369,7 +393,7 @@ class CsvImporter {
           price: price,
           currency: currency,
           fxRate: fxRate,
-          fxBase: baseCurrency,
+          fxBase: fxBaseUsed,
           commission: fees,
           notes: note,
           createdAt: stamp(),
@@ -379,7 +403,7 @@ class CsvImporter {
       final key = HoldingRecord.keyOf(accountId, symbol);
       final d = drafts.putIfAbsent(key, () => _Draft(accountId, symbol, currency));
       if (d.name == null && cell(row, 'name').isNotEmpty) d.name = cell(row, 'name');
-      d.assetClass ??= _assetClass(cell(row, 'asset_class'));
+      d.assetClass ??= _assetClass(cell(row, 'asset_type')) ?? _assetClass(cell(row, 'asset_class'));
       final tg = parseNumber(cell(row, 'target_pct'));
       if (tg != null) d.target = tg;
       final cp = parseNumber(cell(row, 'current_price'));
@@ -401,7 +425,6 @@ class CsvImporter {
         if (d.priceOverride != null || d.target != null) {
           upserts.add(existing.copyWith(
             currentPrice: d.priceOverride,
-            priceUpdatedAt: d.priceOverride != null ? now : null,
             targetPct: d.target,
           ));
         }
@@ -414,7 +437,6 @@ class CsvImporter {
           assetClass: d.assetClass ?? AssetClass.stock,
           currency: d.currency,
           currentPrice: d.priceOverride ?? d.lastTradePrice ?? 0,
-          priceUpdatedAt: now,
           targetPct: d.target,
         ));
       }

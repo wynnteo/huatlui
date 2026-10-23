@@ -14,6 +14,8 @@ class Activity {
   final String symbol;
   final String currency;
   final double amount; // in [currency]: buy cost, sell proceeds, or net dividend
+  final double fxRate;
+  final String fxBase;
   final double? quantity;
   final double? price;
 
@@ -26,6 +28,8 @@ class Activity {
     required this.symbol,
     required this.currency,
     required this.amount,
+    required this.fxRate,
+    required this.fxBase,
     this.quantity,
     this.price,
   });
@@ -43,6 +47,8 @@ List<Activity> buildActivity(List<Trade> trades, List<Dividend> dividends) {
         symbol: t.symbol,
         currency: t.currency,
         amount: t.netAmount,
+        fxRate: t.fxRate,
+        fxBase: t.fxBase,
         quantity: t.quantity,
         price: t.price,
       ),
@@ -56,6 +62,8 @@ List<Activity> buildActivity(List<Trade> trades, List<Dividend> dividends) {
         symbol: d.symbol,
         currency: d.currency,
         amount: d.netAmount,
+        fxRate: d.fxRate,
+        fxBase: d.fxBase,
       ),
   ];
   list.sort((a, b) {

@@ -12,7 +12,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'HuatLui';
 
   @override
-  String get navDashboard => 'Dashboard';
+  String get navDashboard => 'Overview';
 
   @override
   String get navHoldings => 'Holdings';
@@ -21,7 +21,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navAllocation => 'Allocation';
 
   @override
-  String get navTransactions => 'Transactions';
+  String get navTransactions => 'Activity';
 
   @override
   String get navMore => 'More';
@@ -338,4 +338,340 @@ class AppLocalizationsEn extends AppLocalizations {
   String importFailed(String reason) {
     return 'Couldn\'t read that file: $reason';
   }
+
+  @override
+  String get navInsights => 'Insights';
+
+  @override
+  String get navSettings => 'Settings';
+
+  @override
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsRegion => 'Region';
+
+  @override
+  String get settingsThemeAuto => 'Auto';
+
+  @override
+  String get insightsHighlights => 'Highlights';
+
+  @override
+  String get insightsMore => 'More insights';
+
+  @override
+  String get insightsEmpty => 'Add a few transactions to see insights.';
+
+  @override
+  String get tabPerformance => 'Performance';
+
+  @override
+  String get tabIncome => 'Income';
+
+  @override
+  String get returnByHolding => 'Capital gain by holding';
+
+  @override
+  String get investedByMonth => 'Invested by month';
+
+  @override
+  String get dividendsByMonth => 'Dividends by month';
+
+  @override
+  String get byHolding => 'By holding';
+
+  @override
+  String get breakdown => 'Breakdown';
+
+  @override
+  String get unrealisedGain => 'Unrealised gain';
+
+  @override
+  String get realisedGain => 'Realised gain';
+
+  @override
+  String get feesPaid => 'Fees paid';
+
+  @override
+  String get holdingsInProfit => 'Holdings in profit';
+
+  @override
+  String winRateValue(String count, String total) {
+    return '$count of $total';
+  }
+
+  @override
+  String get dividendsTtm => 'Last 12 months';
+
+  @override
+  String get yieldOnCost => 'Yield on cost';
+
+  @override
+  String get incomeEmpty => 'No dividends recorded yet.';
+
+  @override
+  String insightTopContributor(String symbol, String amount, String share) {
+    return '$symbol contributes most to your capital gain: $amount, $share% of total gains.';
+  }
+
+  @override
+  String insightBiggestDrag(String symbol, String amount) {
+    return '$symbol is your biggest drag on capital gain: $amount.';
+  }
+
+  @override
+  String insightConcentration(String count, String pct) {
+    return 'Your top $count holdings make up $pct% of the portfolio.';
+  }
+
+  @override
+  String insightDividends(String amount, String yieldPct) {
+    return 'Dividends so far this year came to $amount, a $yieldPct% yield on cost.';
+  }
+
+  @override
+  String insightCurrency(String pct, String currency) {
+    return '$pct% of your portfolio is held in $currency.';
+  }
+
+  @override
+  String insightFees(String amount, String pct) {
+    return 'You have paid $amount in fees, $pct% of the amount you have invested.';
+  }
+
+  @override
+  String get rangeAll => 'All';
+
+  @override
+  String get chartValueVsCost => 'Value vs cost';
+
+  @override
+  String get chartValue => 'Value';
+
+  @override
+  String get chartCost => 'Cost';
+
+  @override
+  String get chartNote =>
+      'Past values use today\'s exchange rates. Unit trusts fill in as you refresh prices.';
+
+  @override
+  String get chartNeedsData =>
+      'Not enough history yet. Pull down on Overview or Holdings to refresh prices.';
+
+  @override
+  String get chartTotal => 'Total';
+
+  @override
+  String get dividendsYoY => 'This year vs last year';
+
+  @override
+  String get incomeSources => 'Income sources';
+
+  @override
+  String get othersLabel => 'Other';
+
+  @override
+  String pricesUpdated(String when) {
+    return 'Prices updated $when';
+  }
+
+  @override
+  String get pricesNever => 'Prices not updated yet';
+
+  @override
+  String get pricesUpdating => 'Updating prices…';
+
+  @override
+  String pricesRefreshResult(String updated, String failed) {
+    return '$updated updated, $failed failed';
+  }
+
+  @override
+  String pricesFundSkipped(String count) {
+    return '$count unit trust(s) skipped. Set the fund price API first.';
+  }
+
+  @override
+  String get settingsPrices => 'Prices';
+
+  @override
+  String get refreshPrices => 'Refresh prices';
+
+  @override
+  String get fundApiUrl => 'Fund price API';
+
+  @override
+  String get fundApiUrlHint => 'https://your-app.vercel.app';
+
+  @override
+  String get fundApiNotSet => 'Not set';
+
+  @override
+  String get fundApiHelp =>
+      'Web address of your web app. Unit trust prices come from its /api/fund-quote.';
+
+  @override
+  String get assetClassCrypto => 'Crypto';
+
+  @override
+  String get exportCsv => 'Export CSV';
+
+  @override
+  String get exportEmpty => 'Nothing to export yet.';
+
+  @override
+  String exportDone(String count) {
+    return 'Exported $count rows.';
+  }
+
+  @override
+  String get exportCopied =>
+      'No file dialog available. The CSV was copied to the clipboard instead.';
+
+  @override
+  String get filterDate => 'Date';
+
+  @override
+  String get filterType => 'Type';
+
+  @override
+  String get filterBroker => 'Broker';
+
+  @override
+  String get filterClass => 'Asset class';
+
+  @override
+  String get filterClear => 'Clear';
+
+  @override
+  String get rangeAllTime => 'All time';
+
+  @override
+  String get rangeThisMonth => 'This month';
+
+  @override
+  String get rangeLast30 => 'Last 30 days';
+
+  @override
+  String get rangeThisYear => 'This year';
+
+  @override
+  String get rangeLastYear => 'Last year';
+
+  @override
+  String get rangeCustom => 'Custom range…';
+
+  @override
+  String get filterNoMatch => 'No transactions match these filters.';
+
+  @override
+  String filterBrokersCount(String count) {
+    return '$count brokers';
+  }
+
+  @override
+  String filterClassesCount(String count) {
+    return '$count classes';
+  }
+
+  @override
+  String filterTransactions(String count) {
+    return '$count transactions';
+  }
+
+  @override
+  String get summaryBought => 'Bought';
+
+  @override
+  String get summarySold => 'Sold';
+
+  @override
+  String get priceNotUpdated => 'Price not updated';
+
+  @override
+  String priceAsOf(String date) {
+    return 'Price as of $date';
+  }
+
+  @override
+  String get fundApiMissing =>
+      'Unit trust prices need the fund price API. Set it in Settings → Prices.';
+
+  @override
+  String pricesFailedList(String symbols) {
+    return 'Could not price: $symbols';
+  }
+
+  @override
+  String get lockedTitle => 'HuatLui is locked';
+
+  @override
+  String get unlockButton => 'Unlock';
+
+  @override
+  String get unlockReason => 'Unlock HuatLui to view your portfolio';
+
+  @override
+  String get settingsSecurity => 'Security';
+
+  @override
+  String get settingsLock => 'Biometric unlock';
+
+  @override
+  String get settingsLockHelp =>
+      'Uses your fingerprint, face, or the phone’s screen lock. HuatLui locks again after 30 seconds in the background.';
+
+  @override
+  String get lockUnavailable =>
+      'Set up a fingerprint, face or screen lock on this phone first.';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get byAssetClass => 'By asset class';
+
+  @override
+  String incomeYearLabel(String year) {
+    return '$year dividends';
+  }
+
+  @override
+  String incomeLastYear(String amount) {
+    return 'Last year $amount';
+  }
+
+  @override
+  String incomeEmptyYear(String year) {
+    return 'No dividends in $year.';
+  }
+
+  @override
+  String get chartHowLink => 'How is this calculated?';
+
+  @override
+  String get chartHowTitle => 'How value and cost are calculated';
+
+  @override
+  String get chartHowCostTitle => 'Cost (dashed line)';
+
+  @override
+  String get chartHowCostBody =>
+      'What you paid for the holdings you still own. Each buy adds quantity × price plus fees, converted at that trade’s own exchange rate. A sale removes the same share of the cost (average-cost method), so fully sold positions drop out.';
+
+  @override
+  String get chartHowValueTitle => 'Value (solid line)';
+
+  @override
+  String get chartHowValueBody =>
+      'For each day: the units you held that day (rebuilt from your transactions) × that day’s closing price, converted at today’s exchange rate. Weekends and holidays reuse the last close. Unit trusts have no price history, so they step between your trade prices and the prices fetched since you started refreshing.';
+
+  @override
+  String get chartHowGapTitle => 'The gap between them';
+
+  @override
+  String get chartHowGapBody =>
+      'That is your unrealised gain or loss. Dividends and gains already locked in by selling are not in this chart; see Breakdown below and the Income tab.';
 }

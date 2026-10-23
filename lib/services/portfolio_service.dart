@@ -72,6 +72,10 @@ class PortfolioSummary {
   /// never the whole of it.
   double get totalReturnBase => capitalGainBase + dividendsBase;
 
+  /// Price gain/loss only, as a % of everything ever bought. Dividends are
+  /// deliberately NOT in here, so a dividend can never hide a price loss.
+  double get capitalGainPct => totalBoughtBase > 0 ? capitalGainBase / totalBoughtBase * 100 : 0;
+
   /// Simple return on everything ever invested (not time-weighted / XIRR).
   double get returnPct => totalBoughtBase > 0 ? totalReturnBase / totalBoughtBase * 100 : 0;
 }

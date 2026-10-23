@@ -1,4 +1,4 @@
-enum AssetClass { stock, etf, unitTrust, reit, bond, cash, other }
+enum AssetClass { stock, etf, unitTrust, reit, bond, crypto, cash, other }
 
 enum TradeType { buy, sell }
 

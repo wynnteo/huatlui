@@ -1,10 +1,10 @@
 {
   "@@locale": "en",
   "appTitle": "HuatLui",
-  "navDashboard": "Dashboard",
+  "navDashboard": "Overview",
   "navHoldings": "Holdings",
   "navAllocation": "Allocation",
-  "navTransactions": "Transactions",
+  "navTransactions": "Activity",
   "navMore": "More",
   "totalReturn": "Total Return",
   "capitalGain": "Capital Gain",
@@ -229,5 +229,261 @@
         "type": "String"
       }
     }
-  }
+  },
+  "navInsights": "Insights",
+  "navSettings": "Settings",
+  "settingsAppearance": "Appearance",
+  "settingsRegion": "Region",
+  "settingsThemeAuto": "Auto",
+  "insightsHighlights": "Highlights",
+  "insightsMore": "More insights",
+  "insightsEmpty": "Add a few transactions to see insights.",
+  "tabPerformance": "Performance",
+  "tabIncome": "Income",
+  "returnByHolding": "Capital gain by holding",
+  "investedByMonth": "Invested by month",
+  "dividendsByMonth": "Dividends by month",
+  "byHolding": "By holding",
+  "breakdown": "Breakdown",
+  "unrealisedGain": "Unrealised gain",
+  "realisedGain": "Realised gain",
+  "feesPaid": "Fees paid",
+  "holdingsInProfit": "Holdings in profit",
+  "winRateValue": "{count} of {total}",
+  "@winRateValue": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "dividendsTtm": "Last 12 months",
+  "yieldOnCost": "Yield on cost",
+  "incomeEmpty": "No dividends recorded yet.",
+  "insightTopContributor": "{symbol} contributes most to your capital gain: {amount}, {share}% of total gains.",
+  "@insightTopContributor": {
+    "placeholders": {
+      "symbol": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "share": {
+        "type": "String"
+      }
+    }
+  },
+  "insightBiggestDrag": "{symbol} is your biggest drag on capital gain: {amount}.",
+  "@insightBiggestDrag": {
+    "placeholders": {
+      "symbol": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "insightConcentration": "Your top {count} holdings make up {pct}% of the portfolio.",
+  "@insightConcentration": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightDividends": "Dividends so far this year came to {amount}, a {yieldPct}% yield on cost.",
+  "@insightDividends": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "yieldPct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightCurrency": "{pct}% of your portfolio is held in {currency}.",
+  "@insightCurrency": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "insightFees": "You have paid {amount} in fees, {pct}% of the amount you have invested.",
+  "@insightFees": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "rangeAll": "All",
+  "chartValueVsCost": "Value vs cost",
+  "chartValue": "Value",
+  "chartCost": "Cost",
+  "chartNote": "Past values use today's exchange rates. Unit trusts fill in as you refresh prices.",
+  "chartNeedsData": "Not enough history yet. Pull down on Overview or Holdings to refresh prices.",
+  "chartTotal": "Total",
+  "dividendsYoY": "This year vs last year",
+  "incomeSources": "Income sources",
+  "othersLabel": "Other",
+  "pricesUpdated": "Prices updated {when}",
+  "@pricesUpdated": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "pricesNever": "Prices not updated yet",
+  "pricesUpdating": "Updating prices…",
+  "pricesRefreshResult": "{updated} updated, {failed} failed",
+  "@pricesRefreshResult": {
+    "placeholders": {
+      "updated": {
+        "type": "String"
+      },
+      "failed": {
+        "type": "String"
+      }
+    }
+  },
+  "pricesFundSkipped": "{count} unit trust(s) skipped. Set the fund price API first.",
+  "@pricesFundSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsPrices": "Prices",
+  "refreshPrices": "Refresh prices",
+  "fundApiUrl": "Fund price API",
+  "fundApiUrlHint": "https://your-app.vercel.app",
+  "fundApiNotSet": "Not set",
+  "fundApiHelp": "Web address of your web app. Unit trust prices come from its /api/fund-quote.",
+  "assetClassCrypto": "Crypto",
+  "exportCsv": "Export CSV",
+  "exportEmpty": "Nothing to export yet.",
+  "exportDone": "Exported {count} rows.",
+  "@exportDone": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "exportCopied": "No file dialog available. The CSV was copied to the clipboard instead.",
+  "filterDate": "Date",
+  "filterType": "Type",
+  "filterBroker": "Broker",
+  "filterClass": "Asset class",
+  "filterClear": "Clear",
+  "rangeAllTime": "All time",
+  "rangeThisMonth": "This month",
+  "rangeLast30": "Last 30 days",
+  "rangeThisYear": "This year",
+  "rangeLastYear": "Last year",
+  "rangeCustom": "Custom range…",
+  "filterNoMatch": "No transactions match these filters.",
+  "filterBrokersCount": "{count} brokers",
+  "@filterBrokersCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "filterClassesCount": "{count} classes",
+  "@filterClassesCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "filterTransactions": "{count} transactions",
+  "@filterTransactions": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryBought": "Bought",
+  "summarySold": "Sold",
+  "priceNotUpdated": "Price not updated",
+  "priceAsOf": "Price as of {date}",
+  "@priceAsOf": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "fundApiMissing": "Unit trust prices need the fund price API. Set it in Settings → Prices.",
+  "pricesFailedList": "Could not price: {symbols}",
+  "@pricesFailedList": {
+    "placeholders": {
+      "symbols": {
+        "type": "String"
+      }
+    }
+  },
+  "lockedTitle": "HuatLui is locked",
+  "unlockButton": "Unlock",
+  "unlockReason": "Unlock HuatLui to view your portfolio",
+  "settingsSecurity": "Security",
+  "settingsLock": "Biometric unlock",
+  "settingsLockHelp": "Uses your fingerprint, face, or the phone’s screen lock. HuatLui locks again after 30 seconds in the background.",
+  "lockUnavailable": "Set up a fingerprint, face or screen lock on this phone first.",
+  "filterAll": "All",
+  "byAssetClass": "By asset class",
+  "incomeYearLabel": "{year} dividends",
+  "@incomeYearLabel": {
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "incomeLastYear": "Last year {amount}",
+  "@incomeLastYear": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "incomeEmptyYear": "No dividends in {year}.",
+  "@incomeEmptyYear": {
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "chartHowLink": "How is this calculated?",
+  "chartHowTitle": "How value and cost are calculated",
+  "chartHowCostTitle": "Cost (dashed line)",
+  "chartHowCostBody": "What you paid for the holdings you still own. Each buy adds quantity × price plus fees, converted at that trade’s own exchange rate. A sale removes the same share of the cost (average-cost method), so fully sold positions drop out.",
+  "chartHowValueTitle": "Value (solid line)",
+  "chartHowValueBody": "For each day: the units you held that day (rebuilt from your transactions) × that day’s closing price, converted at today’s exchange rate. Weekends and holidays reuse the last close. Unit trusts have no price history, so they step between your trade prices and the prices fetched since you started refreshing.",
+  "chartHowGapTitle": "The gap between them",
+  "chartHowGapBody": "That is your unrealised gain or loss. Dividends and gains already locked in by selling are not in this chart; see Breakdown below and the Income tab."
 }

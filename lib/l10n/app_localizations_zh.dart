@@ -333,4 +333,332 @@ class AppLocalizationsZh extends AppLocalizations {
   String importFailed(String reason) {
     return '无法读取该文件：$reason';
   }
+
+  @override
+  String get navInsights => '洞察';
+
+  @override
+  String get navSettings => '设置';
+
+  @override
+  String get settingsAppearance => '外观';
+
+  @override
+  String get settingsRegion => '地区';
+
+  @override
+  String get settingsThemeAuto => '自动';
+
+  @override
+  String get insightsHighlights => '要点';
+
+  @override
+  String get insightsMore => '更多洞察';
+
+  @override
+  String get insightsEmpty => '添加几笔交易后即可查看洞察。';
+
+  @override
+  String get tabPerformance => '表现';
+
+  @override
+  String get tabIncome => '收入';
+
+  @override
+  String get returnByHolding => '各持仓资本收益';
+
+  @override
+  String get investedByMonth => '每月投入';
+
+  @override
+  String get dividendsByMonth => '每月股息';
+
+  @override
+  String get byHolding => '按持仓';
+
+  @override
+  String get breakdown => '明细';
+
+  @override
+  String get unrealisedGain => '未实现收益';
+
+  @override
+  String get realisedGain => '已实现收益';
+
+  @override
+  String get feesPaid => '已付手续费';
+
+  @override
+  String get holdingsInProfit => '盈利持仓';
+
+  @override
+  String winRateValue(String count, String total) {
+    return '$count / $total';
+  }
+
+  @override
+  String get dividendsTtm => '过去 12 个月';
+
+  @override
+  String get yieldOnCost => '成本收益率';
+
+  @override
+  String get incomeEmpty => '暂无股息记录。';
+
+  @override
+  String insightTopContributor(String symbol, String amount, String share) {
+    return '$symbol 对资本收益贡献最大：$amount，占总盈利的 $share%。';
+  }
+
+  @override
+  String insightBiggestDrag(String symbol, String amount) {
+    return '$symbol 是拖累资本收益最多的持仓：$amount。';
+  }
+
+  @override
+  String insightConcentration(String count, String pct) {
+    return '前 $count 大持仓占投资组合的 $pct%。';
+  }
+
+  @override
+  String insightDividends(String amount, String yieldPct) {
+    return '今年以来的股息为 $amount，按成本计算收益率为 $yieldPct%。';
+  }
+
+  @override
+  String insightCurrency(String pct, String currency) {
+    return '投资组合的 $pct% 以 $currency 持有。';
+  }
+
+  @override
+  String insightFees(String amount, String pct) {
+    return '已支付手续费 $amount，占累计投入的 $pct%。';
+  }
+
+  @override
+  String get rangeAll => '全部';
+
+  @override
+  String get chartValueVsCost => '市值与成本';
+
+  @override
+  String get chartValue => '市值';
+
+  @override
+  String get chartCost => '成本';
+
+  @override
+  String get chartNote => '历史市值按今日汇率计算。基金的走势会随每次刷新价格逐步补全。';
+
+  @override
+  String get chartNeedsData => '历史数据还不够。在总览或持仓页下拉即可刷新价格。';
+
+  @override
+  String get chartTotal => '合计';
+
+  @override
+  String get dividendsYoY => '今年与去年对比';
+
+  @override
+  String get incomeSources => '收入来源';
+
+  @override
+  String get othersLabel => '其他';
+
+  @override
+  String pricesUpdated(String when) {
+    return '价格更新于 $when';
+  }
+
+  @override
+  String get pricesNever => '价格尚未更新';
+
+  @override
+  String get pricesUpdating => '正在更新价格…';
+
+  @override
+  String pricesRefreshResult(String updated, String failed) {
+    return '已更新 $updated 个，失败 $failed 个';
+  }
+
+  @override
+  String pricesFundSkipped(String count) {
+    return '已跳过 $count 只基金，请先设置基金价格 API。';
+  }
+
+  @override
+  String get settingsPrices => '价格';
+
+  @override
+  String get refreshPrices => '刷新价格';
+
+  @override
+  String get fundApiUrl => '基金价格 API';
+
+  @override
+  String get fundApiUrlHint => 'https://your-app.vercel.app';
+
+  @override
+  String get fundApiNotSet => '未设置';
+
+  @override
+  String get fundApiHelp => '你的网页应用地址。基金价格来自它的 /api/fund-quote。';
+
+  @override
+  String get assetClassCrypto => '加密货币';
+
+  @override
+  String get exportCsv => '导出 CSV';
+
+  @override
+  String get exportEmpty => '暂无可导出的数据。';
+
+  @override
+  String exportDone(String count) {
+    return '已导出 $count 行。';
+  }
+
+  @override
+  String get exportCopied => '无法打开保存窗口，已将 CSV 复制到剪贴板。';
+
+  @override
+  String get filterDate => '日期';
+
+  @override
+  String get filterType => '类型';
+
+  @override
+  String get filterBroker => '券商';
+
+  @override
+  String get filterClass => '资产类别';
+
+  @override
+  String get filterClear => '清除';
+
+  @override
+  String get rangeAllTime => '全部时间';
+
+  @override
+  String get rangeThisMonth => '本月';
+
+  @override
+  String get rangeLast30 => '最近 30 天';
+
+  @override
+  String get rangeThisYear => '今年';
+
+  @override
+  String get rangeLastYear => '去年';
+
+  @override
+  String get rangeCustom => '自定义范围…';
+
+  @override
+  String get filterNoMatch => '没有符合筛选条件的交易。';
+
+  @override
+  String filterBrokersCount(String count) {
+    return '$count 个券商';
+  }
+
+  @override
+  String filterClassesCount(String count) {
+    return '$count 个类别';
+  }
+
+  @override
+  String filterTransactions(String count) {
+    return '共 $count 笔';
+  }
+
+  @override
+  String get summaryBought => '买入';
+
+  @override
+  String get summarySold => '卖出';
+
+  @override
+  String get priceNotUpdated => '价格未更新';
+
+  @override
+  String priceAsOf(String date) {
+    return '价格截至 $date';
+  }
+
+  @override
+  String get fundApiMissing => '基金价格需要先设置基金价格 API（设置 → 价格）。';
+
+  @override
+  String pricesFailedList(String symbols) {
+    return '无法获取价格：$symbols';
+  }
+
+  @override
+  String get lockedTitle => 'HuatLui 已锁定';
+
+  @override
+  String get unlockButton => '解锁';
+
+  @override
+  String get unlockReason => '解锁 HuatLui 以查看你的投资组合';
+
+  @override
+  String get settingsSecurity => '安全';
+
+  @override
+  String get settingsLock => '生物识别解锁';
+
+  @override
+  String get settingsLockHelp => '使用指纹、面容或手机的屏幕锁。应用在后台超过 30 秒后会再次锁定。';
+
+  @override
+  String get lockUnavailable => '请先在手机上设置指纹、面容或屏幕锁。';
+
+  @override
+  String get filterAll => '全部';
+
+  @override
+  String get byAssetClass => '按资产类别';
+
+  @override
+  String incomeYearLabel(String year) {
+    return '$year 年股息';
+  }
+
+  @override
+  String incomeLastYear(String amount) {
+    return '去年 $amount';
+  }
+
+  @override
+  String incomeEmptyYear(String year) {
+    return '$year 年没有股息记录。';
+  }
+
+  @override
+  String get chartHowLink => '这是怎么计算的？';
+
+  @override
+  String get chartHowTitle => '市值与成本的计算方式';
+
+  @override
+  String get chartHowCostTitle => '成本（虚线）';
+
+  @override
+  String get chartHowCostBody =>
+      '你仍持有的资产的买入成本。每笔买入加上 数量 × 价格 + 手续费，并按该笔交易当时的汇率换算。卖出时按比例扣减成本（平均成本法），因此已全部卖出的持仓不再计入。';
+
+  @override
+  String get chartHowValueTitle => '市值（实线）';
+
+  @override
+  String get chartHowValueBody =>
+      '每一天：当天持有的数量（根据你的交易重建）× 当天收盘价，并按今天的汇率换算。周末和假日沿用上一个收盘价。基金没有历史价格，因此按你的交易价格逐步变化，并使用你开始刷新价格之后获取的价格。';
+
+  @override
+  String get chartHowGapTitle => '两条线之间的差距';
+
+  @override
+  String get chartHowGapBody => '这就是你的未实现盈亏。股息和已卖出实现的收益不在此图中，请查看下方“明细”和“收入”页。';
 }

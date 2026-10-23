@@ -38,38 +38,40 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.warning,
   });
 
-  // HuatLui palette: cool petrol-teal on a mint-tinted white (light) or
-  // deep petrol-black (dark). Deliberately unlike ByeLui (cream + periwinkle)
-  // and MyLui (orange/gold + cream). gain/loss/warning stay conventional
-  // green/red/amber on purpose so returns read correctly at a glance.
+  // HuatLui palette: near-neutral surfaces with ONE cobalt-blue accent.
+  // Orange belongs to ByeLui and teal to MyLui, so HuatLui gets blue.
+  // The accent is used sparingly (primary actions, charts, selection);
+  // everything else is neutral so the numbers do the talking.
+  // gain/loss/warning stay conventional green/red/amber so returns read
+  // correctly at a glance.
   static const light = AppColors(
-    surface: Color(0xFFF3F8F7),
+    surface: Color(0xFFFAFAF8),
     surfaceRaised: Color(0xFFFFFFFF),
-    outline: Color(0xFFD5E3E0),
-    textPrimary: Color(0xFF0F2A2B),
-    textSecondary: Color(0xFF4A6567),
-    textTertiary: Color(0xFF86A0A2),
-    accent: Color(0xFF0B6E8A),
+    outline: Color(0xFFE8E8E4),
+    textPrimary: Color(0xFF121316),
+    textSecondary: Color(0xFF5E6168),
+    textTertiary: Color(0xFF9C9FA6),
+    accent: Color(0xFF2F4FD6),
     onAccent: Color(0xFFFFFFFF),
-    accentText: Color(0xFF0B6E8A),
-    gain: Color(0xFF2E8B57),
-    loss: Color(0xFFD14B3F),
-    warning: Color(0xFFD99A1E),
+    accentText: Color(0xFF2F4FD6),
+    gain: Color(0xFF1E8A5A),
+    loss: Color(0xFFD0443A),
+    warning: Color(0xFFC48A12),
   );
 
   static const dark = AppColors(
-    surface: Color(0xFF0A1517),
-    surfaceRaised: Color(0xFF112226),
-    outline: Color(0xFF1E3A40),
-    textPrimary: Color(0xFFE3F0F0),
-    textSecondary: Color(0xFF93B0B2),
-    textTertiary: Color(0xFF5F7B7E),
-    accent: Color(0xFF38B6D1),
-    onAccent: Color(0xFF04181D),
-    accentText: Color(0xFF6FD0E6),
+    surface: Color(0xFF0D0E10),
+    surfaceRaised: Color(0xFF16171A),
+    outline: Color(0xFF25272B),
+    textPrimary: Color(0xFFF1F1F2),
+    textSecondary: Color(0xFFA2A5AC),
+    textTertiary: Color(0xFF6A6D74),
+    accent: Color(0xFF7B97FF),
+    onAccent: Color(0xFF0B0F24),
+    accentText: Color(0xFF9DB2FF),
     gain: Color(0xFF4CC38A),
     loss: Color(0xFFF0776A),
-    warning: Color(0xFFF0B94A),
+    warning: Color(0xFFE8B44A),
   );
 
   @override

@@ -5,19 +5,24 @@ import '../models/enums.dart';
 import '../services/portfolio_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import '../theme/chart_palette.dart';
+import '../widgets/donut_chart.dart';
 import '../widgets/currency_display.dart';
 import '../widgets/ui_helpers.dart';
 
 /// Current vs target weights, with concentration-risk flags. This is an
 /// aggregate view, so everything is converted to the base currency.
-class AllocationScreen extends StatefulWidget {
-  const AllocationScreen({super.key});
+///
+/// It is a plain widget (no Scaffold / title) because it now lives inside
+/// the Insights screen.
+class AllocationView extends StatefulWidget {
+  const AllocationView({super.key});
 
   @override
-  State<AllocationScreen> createState() => _AllocationScreenState();
+  State<AllocationView> createState() => _AllocationViewState();
 }
 
-class _AllocationScreenState extends State<AllocationScreen> {
+class _AllocationViewState extends State<AllocationView> {
   AllocationGroup _group = AllocationGroup.assetClass;
 
   String _groupLabel(AppLocalizations t, AllocationGroup g) {
@@ -60,77 +65,82 @@ class _AllocationScreenState extends State<AllocationScreen> {
     final t = AppLocalizations.of(context)!;
     final c = context.colors;
 
-    return SafeArea(
-      child: ListenableBuilder(
-        listenable: Listenable.merge([repo, settings]),
-        builder: (context, _) {
-          final base = settings.baseCurrency;
-          final svc = PortfolioService(fx: fx, baseCurrency: base);
-          final positions = svc.positions(trades: repo.trades, dividends: repo.dividends, holdings: repo.holdings);
-          final accountNames = {for (final a in repo.accounts) a.id: a.name};
-          final slices = svc.allocation(positions, _group, accountNames: accountNames);
-          final highCount = slices.where((s) => s.risk == RiskLevel.high).length;
+    return ListenableBuilder(
+      listenable: Listenable.merge([repo, settings]),
+      builder: (context, _) {
+        final base = settings.baseCurrency;
+        final svc = PortfolioService(fx: fx, baseCurrency: base);
+        final positions = svc.positions(trades: repo.trades, dividends: repo.dividends, holdings: repo.holdings);
+        final accountNames = {for (final a in repo.accounts) a.id: a.name};
+        final slices = svc.allocation(positions, _group, accountNames: accountNames);
+        final highCount = slices.where((s) => s.risk == RiskLevel.high).length;
 
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-            children: [
-              ScreenTitle(t.navAllocation),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final g in AllocationGroup.values)
-                    ChoiceChip(
-                      label: Text(_groupLabel(t, g)),
-                      selected: _group == g,
-                      onSelected: (_) => setState(() => _group = g),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: AppSegmented(
+                labels: [for (final g in AllocationGroup.values) _groupLabel(t, g)],
+                selected: AllocationGroup.values.indexOf(_group),
+                onChanged: (i) => setState(() => _group = AllocationGroup.values[i]),
+              ),
+            ),
+            const SizedBox(height: 10),
+            BaseCurrencyNote(t.shownInBaseCurrency(base)),
+            const SizedBox(height: 8),
+
+            if (slices.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 40),
+                child: Center(child: Text(t.allocationEmpty, style: TextStyle(color: c.textSecondary))),
+              ),
+
+            if (slices.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              DonutChart(
+                totalText: CurrencyText.formatAmount(slices.fold<double>(0, (a, x) => a + x.valueBase), base),
+                totalCaption: t.chartTotal,
+                slices: [
+                  for (var i = 0; i < slices.length; i++)
+                    DonutSlice(
+                      label: _sliceLabel(t, slices[i]),
+                      value: slices[i].valueBase,
+                      color: ChartPalette.color(context, i),
+                      detail: '${slices[i].currentPct.toStringAsFixed(1)}%',
                     ),
                 ],
               ),
-              const SizedBox(height: 6),
-              BaseCurrencyNote(t.shownInBaseCurrency(base)),
-              const SizedBox(height: 16),
-
-              if (slices.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 40),
-                  child: Center(child: Text(t.allocationEmpty, style: TextStyle(color: c.textSecondary))),
-                ),
-
-              if (highCount > 0)
-                Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: c.loss.withOpacity(0.10),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: c.loss.withOpacity(0.5)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.warning_amber_rounded, color: c.loss),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(t.concentrationRiskTitle, style: TextStyle(fontWeight: FontWeight.w700, color: c.loss)),
-                      ),
-                      Text(t.needAttention(highCount.toString()), style: TextStyle(color: c.loss, fontSize: 12)),
-                    ],
-                  ),
-                ),
-
-              for (final s in slices) ...[
-                _SliceRow(
-                  slice: s,
-                  label: _sliceLabel(t, s),
-                  base: base,
-                  message: _message(t, s, _sliceLabel(t, s)),
-                ),
-                const HairlineDivider(),
-              ],
+              const SizedBox(height: 12),
             ],
-          );
-        },
-      ),
+
+            if (highCount > 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 8, bottom: 4),
+                child: Row(
+                  children: [
+                    Container(width: 8, height: 8, decoration: BoxDecoration(color: c.loss, shape: BoxShape.circle)),
+                    const SizedBox(width: 8),
+                    Text('${t.concentrationRiskTitle} · ${t.needAttention(highCount.toString())}',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: c.loss)),
+                  ],
+                ),
+              ),
+
+            for (var i = 0; i < slices.length; i++) ...[
+              _SliceRow(
+                slice: slices[i],
+                label: _sliceLabel(t, slices[i]),
+                base: base,
+                dot: ChartPalette.color(context, i),
+                message: _message(t, slices[i], _sliceLabel(t, slices[i])),
+              ),
+              const HairlineDivider(),
+            ],
+          ],
+        );
+      },
     );
   }
 }
@@ -140,8 +150,9 @@ class _SliceRow extends StatelessWidget {
   final String label;
   final String base;
   final String? message;
+  final Color dot;
 
-  const _SliceRow({required this.slice, required this.label, required this.base, required this.message});
+  const _SliceRow({required this.slice, required this.label, required this.base, required this.message, required this.dot});
 
   @override
   Widget build(BuildContext context) {
@@ -169,14 +180,16 @@ class _SliceRow extends StatelessWidget {
         children: [
           Row(
             children: [
+              Container(width: 8, height: 8, decoration: BoxDecoration(color: dot, shape: BoxShape.circle)),
+              const SizedBox(width: 10),
               Expanded(child: Text(label, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: c.textPrimary))),
               Text('${s.currentPct.toStringAsFixed(1)}%',
-                  style: AppTheme.numeral(context, size: 15, color: s.risk == RiskLevel.none ? c.textPrimary : barColor)),
+                  style: AppTheme.numeral(context, size: 15, weight: FontWeight.w500, color: s.risk == RiskLevel.none ? c.textPrimary : barColor)),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           _Bar(current: s.currentPct, target: s.targetPct, color: barColor),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Row(
             children: [
               Text(CurrencyText.formatAmount(s.valueBase, base), style: TextStyle(fontSize: 11, color: c.textTertiary)),
@@ -197,7 +210,7 @@ class _SliceRow extends StatelessWidget {
   }
 }
 
-/// A track with a filled "current" bar and a thin tick marking the target.
+/// A thin track with a filled "current" bar and a small tick for the target.
 class _Bar extends StatelessWidget {
   final double current;
   final double? target;
@@ -213,17 +226,17 @@ class _Bar extends StatelessWidget {
         final w = constraints.maxWidth;
         final fillW = w * (current / 100).clamp(0.0, 1.0).toDouble();
         return SizedBox(
-          height: 10,
+          height: 4,
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              Container(decoration: BoxDecoration(color: c.outline, borderRadius: BorderRadius.circular(5))),
-              Container(width: fillW, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(5))),
+              Container(decoration: BoxDecoration(color: c.outline, borderRadius: BorderRadius.circular(2))),
+              Container(width: fillW, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2))),
               if (target != null)
                 Positioned(
                   left: w * (target! / 100).clamp(0.0, 1.0).toDouble() - 1,
-                  top: -3,
-                  bottom: -3,
+                  top: -4,
+                  bottom: -4,
                   child: Container(width: 2, color: c.textPrimary),
                 ),
             ],

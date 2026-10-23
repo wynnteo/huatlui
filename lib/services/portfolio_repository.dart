@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../models/account.dart';
 import '../models/dividend.dart';
 import '../models/holding_record.dart';
+import '../models/price_point.dart';
 import '../models/trade.dart';
 import 'csv_import.dart';
 import 'demo_data.dart';
@@ -18,11 +19,16 @@ class PortfolioRepository extends ChangeNotifier {
   late final Box<dynamic> _holdingsBox;
   late final Box<dynamic> _tradesBox;
   late final Box<dynamic> _dividendsBox;
+  late final Box<dynamic> _priceBox;
 
   List<Account> accounts = [];
   List<HoldingRecord> holdings = [];
   List<Trade> trades = [];
   List<Dividend> dividends = [];
+
+  /// Daily closing prices per symbol (upper-case), oldest first. Stocks get
+  /// the full history from Yahoo; unit trusts build up one snapshot per refresh.
+  Map<String, List<PricePoint>> priceHistory = {};
 
   Future<void> init() async {
     await Hive.initFlutter();
@@ -30,7 +36,9 @@ class PortfolioRepository extends ChangeNotifier {
     _holdingsBox = await Hive.openBox<dynamic>('holdings');
     _tradesBox = await Hive.openBox<dynamic>('trades');
     _dividendsBox = await Hive.openBox<dynamic>('dividends');
+    _priceBox = await Hive.openBox<dynamic>('price_history');
     _reload();
+    _reloadPrices();
   }
 
   Map<String, dynamic> _asMap(dynamic v) => Map<String, dynamic>.from(v as Map);
@@ -41,6 +49,44 @@ class PortfolioRepository extends ChangeNotifier {
     holdings = _holdingsBox.values.map((e) => HoldingRecord.fromJson(_asMap(e))).toList();
     trades = _tradesBox.values.map((e) => Trade.fromJson(_asMap(e))).toList();
     dividends = _dividendsBox.values.map((e) => Dividend.fromJson(_asMap(e))).toList();
+  }
+
+  void _reloadPrices() {
+    final map = <String, List<PricePoint>>{};
+    for (final k in _priceBox.keys) {
+      final raw = _priceBox.get(k);
+      if (raw is! List) continue;
+      final list = <PricePoint>[];
+      for (final e in raw) {
+        list.add(PricePoint.fromJson(e));
+      }
+      list.sort((a, b) => a.date.compareTo(b.date));
+      map[k as String] = list;
+    }
+    priceHistory = map;
+  }
+
+  /// Saves a whole price refresh in one go: new prices on the holdings, and
+  /// the day-by-day history merged into what is already stored (newer wins).
+  Future<void> applyPriceRefresh(List<HoldingRecord> updatedHoldings, Map<String, List<PricePoint>> history) async {
+    for (final h in updatedHoldings) {
+      await _holdingsBox.put(h.id, h.toJson());
+    }
+    for (final e in history.entries) {
+      final merged = <int, double>{};
+      for (final p in priceHistory[e.key] ?? const <PricePoint>[]) {
+        merged[p.date.millisecondsSinceEpoch] = p.price;
+      }
+      for (final p in e.value) {
+        merged[p.date.millisecondsSinceEpoch] = p.price;
+      }
+      final days = merged.keys.toList()..sort();
+      await _priceBox.put(e.key, [
+        for (final d in days) [d, merged[d]!],
+      ]);
+    }
+    _reloadPrices();
+    await _changed();
   }
 
   Future<void> _changed() async {
@@ -125,6 +171,8 @@ class PortfolioRepository extends ChangeNotifier {
     await _holdingsBox.clear();
     await _tradesBox.clear();
     await _dividendsBox.clear();
+    await _priceBox.clear();
+    _reloadPrices();
     await _changed();
   }
 }

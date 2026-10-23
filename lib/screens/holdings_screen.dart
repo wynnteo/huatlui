@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../app_scope.dart';
 import '../l10n/app_localizations.dart';
+import '../models/enums.dart';
 import '../models/holding_record.dart';
 import '../services/parse_utils.dart';
 import '../services/portfolio_service.dart';
@@ -13,6 +14,16 @@ import '../widgets/ui_helpers.dart';
 /// Per-item screen, so every amount here is in the holding's OWN currency.
 class HoldingsScreen extends StatelessWidget {
   const HoldingsScreen({super.key});
+
+  /// A holding whose price was never fetched (or is a week old) is flagged,
+  /// because its gain/loss is only as good as that price.
+  String? _priceNote(AppLocalizations t, Position p) {
+    if (p.assetClass == AssetClass.cash) return null;
+    final updated = repo.holdingFor(p.accountId, p.symbol)?.priceUpdatedAt;
+    if (updated == null) return t.priceNotUpdated;
+    if (DateTime.now().difference(updated).inDays >= 7) return t.priceAsOf(fmtDate(updated));
+    return null;
+  }
 
   Future<void> _edit(BuildContext context, Position p) async {
     final t = AppLocalizations.of(context)!;
@@ -85,8 +96,11 @@ class HoldingsScreen extends StatelessWidget {
               .where((p) => p.isOpen)
               .toList();
 
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          return RefreshIndicator(
+            onRefresh: () => prices.refreshAll(),
+            child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 96),
             children: [
               ScreenTitle(t.navHoldings),
               if (open.isNotEmpty)
@@ -108,12 +122,13 @@ class HoldingsScreen extends StatelessWidget {
                   ),
                   const HairlineDivider(),
                   for (final p in open.where((p) => p.accountId == account.id)) ...[
-                    _HoldingRow(position: p, onTap: () => _edit(context, p)),
+                    _HoldingRow(position: p, priceNote: _priceNote(t, p), onTap: () => _edit(context, p)),
                     const HairlineDivider(),
                   ],
                 ],
               ],
             ],
+          ),
           );
         },
       ),
@@ -123,8 +138,9 @@ class HoldingsScreen extends StatelessWidget {
 
 class _HoldingRow extends StatelessWidget {
   final Position position;
+  final String? priceNote;
   final VoidCallback onTap;
-  const _HoldingRow({required this.position, required this.onTap});
+  const _HoldingRow({required this.position, required this.priceNote, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -161,6 +177,10 @@ class _HoldingRow extends StatelessWidget {
               const SizedBox(height: 2),
               Text('${CurrencyText.formatSigned(p.unrealizedLocal, p.currency)}  $pct',
                   style: AppTheme.numeral(context, size: 11, weight: FontWeight.w500, color: gainColor)),
+              if (priceNote != null) ...[
+                const SizedBox(height: 2),
+                Text(priceNote!, style: TextStyle(fontSize: 11, color: c.warning)),
+              ],
             ],
           ),
         ],
