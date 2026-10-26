@@ -7,18 +7,35 @@ import '../models/dividend.dart';
 import '../models/enums.dart';
 import '../models/holding_record.dart';
 import '../models/trade.dart';
+import '../services/activity.dart';
 import '../services/parse_utils.dart';
 import '../services/portfolio_service.dart';
 import '../theme/app_colors.dart';
+import '../widgets/activity_actions.dart';
 import '../widgets/ui_helpers.dart';
 
 enum EntryKind { buy, sell, dividend }
 
 /// One form for Buy / Sell / Dividend. Fields that don't apply to the chosen
 /// kind are hidden, and a symbol you already hold fills in its currency.
+///
+/// Also edits an existing entry (pass [editTrade] or [editDividend]; the
+/// account and symbol are then fixed, so a wrong one means delete and re-add),
+/// and can open pre-filled for one holding ([prefillAccountId] + [prefillSymbol]).
 class EntryFormScreen extends StatefulWidget {
   final EntryKind initialKind;
-  const EntryFormScreen({super.key, this.initialKind = EntryKind.buy});
+  final Trade? editTrade;
+  final Dividend? editDividend;
+  final String? prefillAccountId;
+  final String? prefillSymbol;
+  const EntryFormScreen({
+    super.key,
+    this.initialKind = EntryKind.buy,
+    this.editTrade,
+    this.editDividend,
+    this.prefillAccountId,
+    this.prefillSymbol,
+  });
 
   @override
   State<EntryFormScreen> createState() => _EntryFormScreenState();
@@ -48,9 +65,64 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
   @override
   void initState() {
     super.initState();
-    _kind = widget.initialKind;
-    _accountId = repo.accounts.isNotEmpty ? repo.accounts.first.id : _newAccountValue;
+    final et = widget.editTrade;
+    final ed = widget.editDividend;
+    _kind = ed != null
+        ? EntryKind.dividend
+        : et != null
+            ? (et.type == TradeType.buy ? EntryKind.buy : EntryKind.sell)
+            : widget.initialKind;
+    _accountId = et?.accountId ??
+        ed?.accountId ??
+        widget.prefillAccountId ??
+        (repo.accounts.isNotEmpty ? repo.accounts.first.id : _newAccountValue);
+    if (widget.prefillSymbol != null) _symbolCtrl.text = widget.prefillSymbol!;
+    if (et != null) {
+      _symbolCtrl.text = et.symbol;
+      _date = DateTime(et.tradeDate.year, et.tradeDate.month, et.tradeDate.day);
+      _qtyCtrl.text = _num(et.quantity);
+      _priceCtrl.text = _num(et.price);
+      _feesCtrl.text = et.fees == 0 ? '' : _num(et.fees);
+      _fxCtrl.text = _num(et.fxRate);
+      _fxTouched = true; // keep the rate that was recorded
+      _notesCtrl.text = et.notes ?? '';
+      _currency = et.currency;
+    }
+    if (ed != null) {
+      _symbolCtrl.text = ed.symbol;
+      _date = DateTime(ed.paymentDate.year, ed.paymentDate.month, ed.paymentDate.day);
+      _amountCtrl.text = _num(ed.grossAmount);
+      _taxCtrl.text = ed.withholdingTax == 0 ? '' : _num(ed.withholdingTax);
+      _fxCtrl.text = _num(ed.fxRate);
+      _fxTouched = true;
+      _notesCtrl.text = ed.notes ?? '';
+      _currency = ed.currency;
+    }
     _syncFx();
+  }
+
+  bool get _editing => widget.editTrade != null || widget.editDividend != null;
+
+  /// The base currency the stored exchange rate was recorded against. When
+  /// editing it is kept, so changing your base currency later doesn't
+  /// silently reinterpret an old rate.
+  String get _fxBase => widget.editTrade?.fxBase ?? widget.editDividend?.fxBase ?? settings.baseCurrency;
+
+  static String _num(double v) {
+    var s = v.toStringAsFixed(6);
+    if (s.contains('.')) s = s.replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '');
+    return s;
+  }
+
+  Future<void> _delete() async {
+    final et = widget.editTrade;
+    final ed = widget.editDividend;
+    final deleted = et != null
+        ? await deleteTradeChecked(context, et)
+        : ed != null
+            ? await deleteDividendChecked(context, ed)
+            : false;
+    if (deleted && mounted) Navigator.pop(context);
   }
 
   @override
@@ -75,7 +147,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
   /// Pre-fill the FX rate from the built-in table until the user edits it.
   void _syncFx() {
     if (_fxTouched) return;
-    _fxCtrl.text = fx.rate(_effectiveCurrency, settings.baseCurrency).toStringAsFixed(4);
+    _fxCtrl.text = fx.rate(_effectiveCurrency, _fxBase).toStringAsFixed(4);
   }
 
   void _toast(String msg) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
@@ -93,6 +165,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
   Future<void> _save() async {
     final t = AppLocalizations.of(context)!;
     final base = settings.baseCurrency;
+    final fxBase = _fxBase;
 
     // --- account ---
     Account? newAccount;
@@ -110,12 +183,12 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     final symbol = _symbolCtrl.text.trim().toUpperCase();
     if (symbol.isEmpty) return _toast(t.errSymbolRequired);
     final holding = newAccount == null ? repo.holdingFor(accountId, symbol) : null;
-    if (_kind == EntryKind.dividend && holding == null) return _toast(t.errDividendNeedsHolding);
-    final currency = holding?.currency ?? _currency;
+    if (_kind == EntryKind.dividend && holding == null && !_editing) return _toast(t.errDividendNeedsHolding);
+    final currency = widget.editTrade?.currency ?? widget.editDividend?.currency ?? holding?.currency ?? _currency;
 
     // --- numbers ---
     double fxRate = 1.0;
-    if (currency != base) {
+    if (currency != fxBase) {
       final v = parseNumber(_fxCtrl.text);
       if (v == null || v <= 0) return _toast(t.errFxRate);
       fxRate = v;
@@ -132,17 +205,17 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       if (tax == null || tax < 0) return _toast(t.errNumber(t.fieldWithholdingTax));
 
       await repo.putDividend(Dividend(
-        id: uuid.v4(),
+        id: widget.editDividend?.id ?? uuid.v4(),
         accountId: accountId,
-        symbol: holding!.symbol,
+        symbol: widget.editDividend?.symbol ?? holding!.symbol,
         currency: currency,
         fxRate: fxRate,
-        fxBase: base,
+        fxBase: fxBase,
         grossAmount: gross,
         withholdingTax: tax,
         paymentDate: _date,
         notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
-        createdAt: now,
+        createdAt: widget.editDividend?.createdAt ?? now,
       ));
     } else {
       final qty = parseNumber(_qtyCtrl.text);
@@ -153,7 +226,28 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       final fees = feesText.isEmpty ? 0.0 : parseNumber(feesText);
       if (fees == null || fees < 0) return _toast(t.errNumber(t.fieldFees));
 
-      if (_kind == EntryKind.sell) {
+      final old = widget.editTrade;
+      if (old != null) {
+        // Editing: refuse only if the change leaves a sale bigger than the units held.
+        final candidate = Trade(
+          id: old.id,
+          accountId: old.accountId,
+          symbol: old.symbol,
+          type: _kind == EntryKind.buy ? TradeType.buy : TradeType.sell,
+          tradeDate: _date,
+          quantity: qty,
+          price: price,
+          currency: old.currency,
+          fxRate: fxRate,
+          fxBase: fxBase,
+          commission: fees,
+          createdAt: old.createdAt,
+        );
+        final next = [for (final x in repo.trades) if (x.id != old.id) x, candidate];
+        if (changeBreaksHoldings(repo.trades, next)) return _toast(t.errBreaksHoldings);
+      }
+
+      if (_kind == EntryKind.sell && old == null) {
         final svc = PortfolioService(fx: fx, baseCurrency: base);
         final key = HoldingRecord.keyOf(accountId, symbol);
         final held = svc
@@ -164,7 +258,9 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       }
 
       if (newAccount != null) await repo.putAccount(newAccount);
-      if (holding == null) {
+      var createdHolding = false;
+      if (holding == null && !_editing) {
+        createdHolding = true;
         await repo.putHolding(HoldingRecord(
           id: uuid.v4(),
           accountId: accountId,
@@ -172,12 +268,12 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
           name: _nameCtrl.text.trim().isEmpty ? symbol : _nameCtrl.text.trim(),
           assetClass: _assetClass,
           currency: currency,
+          // Placeholder until the first real price is fetched (below).
           currentPrice: price,
-          priceUpdatedAt: now,
         ));
       }
       await repo.putTrade(Trade(
-        id: uuid.v4(),
+        id: widget.editTrade?.id ?? uuid.v4(),
         accountId: accountId,
         symbol: symbol,
         type: _kind == EntryKind.buy ? TradeType.buy : TradeType.sell,
@@ -186,11 +282,13 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
         price: price,
         currency: currency,
         fxRate: fxRate,
-        fxBase: base,
+        fxBase: fxBase,
         commission: fees,
         notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
-        createdAt: now,
+        createdAt: widget.editTrade?.createdAt ?? now,
       ));
+      // A brand-new holding has no real price yet: fetch it now.
+      if (createdHolding) prices.refreshAll();
       if (mounted) Navigator.pop(context);
       return;
     }
@@ -205,27 +303,35 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     final base = settings.baseCurrency;
     final holding = _holding();
     final currency = _effectiveCurrency;
+    final fxBase = _fxBase;
     final accountHoldings = _isNewAccount ? <HoldingRecord>[] : repo.holdings.where((h) => h.accountId == _accountId).toList();
 
     Widget gap([double h = 16]) => SizedBox(height: h);
 
     return Scaffold(
-      appBar: AppBar(title: Text(t.addEntry)),
+      appBar: AppBar(
+        title: Text(_editing ? t.editEntry : t.addEntry),
+        actions: [
+          if (_editing) IconButton(icon: const Icon(Icons.delete_outline), tooltip: t.delete, onPressed: _delete),
+        ],
+      ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
           children: [
-            SegmentedButton<EntryKind>(
-              showSelectedIcon: false,
-              segments: [
-                ButtonSegment(value: EntryKind.buy, label: Text(t.buy)),
-                ButtonSegment(value: EntryKind.sell, label: Text(t.sell)),
-                ButtonSegment(value: EntryKind.dividend, label: Text(t.dividend)),
-              ],
-              selected: {_kind},
-              onSelectionChanged: (s) => setState(() => _kind = s.first),
-            ),
-            gap(20),
+            if (widget.editDividend == null) ...[
+              SegmentedButton<EntryKind>(
+                showSelectedIcon: false,
+                segments: [
+                  ButtonSegment(value: EntryKind.buy, label: Text(t.buy)),
+                  ButtonSegment(value: EntryKind.sell, label: Text(t.sell)),
+                  if (widget.editTrade == null) ButtonSegment(value: EntryKind.dividend, label: Text(t.dividend)),
+                ],
+                selected: {_kind},
+                onSelectionChanged: (s) => setState(() => _kind = s.first),
+              ),
+              gap(20),
+            ],
 
             DropdownButtonFormField<String>(
               value: _accountId,
@@ -234,10 +340,12 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                 for (final a in repo.accounts) DropdownMenuItem(value: a.id, child: Text(a.name)),
                 DropdownMenuItem(value: _newAccountValue, child: Text(t.newAccountOption)),
               ],
-              onChanged: (v) => setState(() {
-                _accountId = v;
-                _syncFx();
-              }),
+              onChanged: _editing
+                  ? null
+                  : (v) => setState(() {
+                        _accountId = v;
+                        _syncFx();
+                      }),
             ),
             if (_isNewAccount) ...[
               gap(12),
@@ -250,11 +358,12 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
 
             TextField(
               controller: _symbolCtrl,
+              enabled: !_editing,
               textCapitalization: TextCapitalization.characters,
               onChanged: (_) => setState(_syncFx),
               decoration: InputDecoration(labelText: t.fieldSymbol, hintText: t.symbolHint),
             ),
-            if (accountHoldings.isNotEmpty) ...[
+            if (accountHoldings.isNotEmpty && !_editing) ...[
               gap(10),
               Text(t.pickHoldingHint, style: TextStyle(fontSize: 12, color: c.textSecondary)),
               gap(6),
@@ -354,12 +463,12 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
             ],
             gap(),
 
-            if (currency != base) ...[
+            if (currency != fxBase) ...[
               TextField(
                 controller: _fxCtrl,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 onChanged: (_) => _fxTouched = true,
-                decoration: InputDecoration(labelText: t.fieldFxRate, helperText: t.fxRateHelp(currency, base), helperMaxLines: 3),
+                decoration: InputDecoration(labelText: t.fieldFxRate, helperText: t.fxRateHelp(currency, fxBase), helperMaxLines: 3),
               ),
               gap(),
             ],

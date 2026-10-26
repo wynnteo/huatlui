@@ -19,6 +19,7 @@ class Position {
   final double marketValueLocal;
   final double marketValueBase; // today's price at today's FX rate
   final double realizedBase; // gains already locked in by sells
+  final double realizedLocal; // same, in the holding's own currency
   final double dividendsBase; // net dividends received
   final double totalBoughtBase; // everything ever bought, for return %
   final double? targetPct;
@@ -36,6 +37,7 @@ class Position {
     required this.marketValueLocal,
     required this.marketValueBase,
     required this.realizedBase,
+    this.realizedLocal = 0,
     required this.dividendsBase,
     required this.totalBoughtBase,
     this.targetPct,
@@ -139,7 +141,7 @@ class PortfolioService {
         });
       final divs = divsByKey[key] ?? const <Dividend>[];
 
-      double qty = 0, costLocal = 0, costBase = 0, realizedBase = 0, boughtBase = 0;
+      double qty = 0, costLocal = 0, costBase = 0, realizedBase = 0, realizedLocal = 0, boughtBase = 0;
 
       for (final t in list) {
         if (t.type == TradeType.buy) {
@@ -159,6 +161,7 @@ class PortfolioService {
           final proceedsLocal = sellQty * t.price - feeShare;
           final proceedsBase = _hist(proceedsLocal, t.fxRate, t.fxBase);
           realizedBase += proceedsBase - costOutBase;
+          realizedLocal += proceedsLocal - costOutLocal;
           qty -= sellQty;
           costLocal -= costOutLocal;
           costBase -= costOutBase;
@@ -199,6 +202,7 @@ class PortfolioService {
         marketValueLocal: mvLocal,
         marketValueBase: mvBase,
         realizedBase: realizedBase,
+        realizedLocal: realizedLocal,
         dividendsBase: divBase,
         totalBoughtBase: boughtBase,
         targetPct: m?.targetPct,

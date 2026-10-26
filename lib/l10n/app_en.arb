@@ -167,22 +167,6 @@
   },
   "errDividendNeedsHolding": "To record a dividend, pick a holding you already own.",
   "errFxRate": "Enter a valid FX rate.",
-  "editHoldingTitle": "Update {symbol}",
-  "@editHoldingTitle": {
-    "placeholders": {
-      "symbol": {
-        "type": "String"
-      }
-    }
-  },
-  "currentPriceLabel": "Current price ({currency})",
-  "@currentPriceLabel": {
-    "placeholders": {
-      "currency": {
-        "type": "String"
-      }
-    }
-  },
   "targetPctLabel": "Target % of portfolio (blank = none)",
   "holdingsTapHint": "Tap a holding to update its price or target.",
   "importCsv": "Import from CSV",
@@ -363,20 +347,8 @@
       }
     }
   },
-  "pricesFundSkipped": "{count} unit trust(s) skipped. Set the fund price API first.",
-  "@pricesFundSkipped": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "settingsPrices": "Prices",
   "refreshPrices": "Refresh prices",
-  "fundApiUrl": "Fund price API",
-  "fundApiUrlHint": "https://your-app.vercel.app",
-  "fundApiNotSet": "Not set",
-  "fundApiHelp": "Web address of your web app. Unit trust prices come from its /api/fund-quote.",
   "assetClassCrypto": "Crypto",
   "exportCsv": "Export CSV",
   "exportEmpty": "Nothing to export yet.",
@@ -436,7 +408,6 @@
       }
     }
   },
-  "fundApiMissing": "Unit trust prices need the fund price API. Set it in Settings → Prices.",
   "pricesFailedList": "Could not price: {symbols}",
   "@pricesFailedList": {
     "placeholders": {
@@ -485,5 +456,29 @@
   "chartHowValueTitle": "Value (solid line)",
   "chartHowValueBody": "For each day: the units you held that day (rebuilt from your transactions) × that day’s closing price, converted at today’s exchange rate. Weekends and holidays reuse the last close. Unit trusts have no price history, so they step between your trade prices and the prices fetched since you started refreshing.",
   "chartHowGapTitle": "The gap between them",
-  "chartHowGapBody": "That is your unrealised gain or loss. Dividends and gains already locked in by selling are not in this chart; see Breakdown below and the Income tab."
+  "chartHowGapBody": "That is your unrealised gain or loss. Dividends and gains already locked in by selling are not in this chart; see Breakdown below and the Income tab.",
+  "settingsAbout": "About",
+  "aboutVersion": "Version",
+  "latestPrice": "Latest {price}",
+  "@latestPrice": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "editEntry": "Edit entry",
+  "errBreaksHoldings": "That would leave a later sale larger than the units you held. Change or delete the sale first.",
+  "holdingDetails": "Details",
+  "detailMarketValue": "Market value",
+  "detailUnits": "Units",
+  "detailAvgPrice": "Average price",
+  "detailLatestPrice": "Latest price",
+  "detailCost": "Cost",
+  "detailDividends": "Dividends collected",
+  "detailBroker": "Broker",
+  "detailTarget": "Target weight",
+  "detailNotSet": "Not set",
+  "detailTransactions": "Transactions",
+  "detailEmpty": "No transactions for this holding."
 }

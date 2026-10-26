@@ -18,13 +18,13 @@ dependencies:
   intl: any
   uuid: ^4.2.1
   http: ^1.2.2
+  html: ^0.15.4
+  package_info_plus: ^8.0.0
   local_auth: ^2.3.0
 
   file_picker: ^10.3.10
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-
-  # Later: live FX rates and the API-backed sync layer.
 
 dev_dependencies:
   flutter_test:

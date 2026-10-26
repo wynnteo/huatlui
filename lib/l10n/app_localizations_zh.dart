@@ -148,14 +148,12 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String concentrationRiskOverTarget(
-      String label, String current, String target) {
+  String concentrationRiskOverTarget(String label, String current, String target) {
     return '$label 占组合 $current%，高于你设的目标 $target%。';
   }
 
   @override
-  String concentrationRiskUnderTarget(
-      String label, String current, String target) {
+  String concentrationRiskUnderTarget(String label, String current, String target) {
     return '$label 占组合 $current%，低于你设的目标 $target%。';
   }
 
@@ -276,16 +274,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get errFxRate => '请输入有效的汇率。';
-
-  @override
-  String editHoldingTitle(String symbol) {
-    return '更新 $symbol';
-  }
-
-  @override
-  String currentPriceLabel(String currency) {
-    return '现价（$currency）';
-  }
 
   @override
   String get targetPctLabel => '目标占比 %（留空为不设）';
@@ -482,27 +470,10 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String pricesFundSkipped(String count) {
-    return '已跳过 $count 只基金，请先设置基金价格 API。';
-  }
-
-  @override
   String get settingsPrices => '价格';
 
   @override
   String get refreshPrices => '刷新价格';
-
-  @override
-  String get fundApiUrl => '基金价格 API';
-
-  @override
-  String get fundApiUrlHint => 'https://your-app.vercel.app';
-
-  @override
-  String get fundApiNotSet => '未设置';
-
-  @override
-  String get fundApiHelp => '你的网页应用地址。基金价格来自它的 /api/fund-quote。';
 
   @override
   String get assetClassCrypto => '加密货币';
@@ -587,9 +558,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get fundApiMissing => '基金价格需要先设置基金价格 API（设置 → 价格）。';
-
-  @override
   String pricesFailedList(String symbols) {
     return '无法获取价格：$symbols';
   }
@@ -646,19 +614,70 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chartHowCostTitle => '成本（虚线）';
 
   @override
-  String get chartHowCostBody =>
-      '你仍持有的资产的买入成本。每笔买入加上 数量 × 价格 + 手续费，并按该笔交易当时的汇率换算。卖出时按比例扣减成本（平均成本法），因此已全部卖出的持仓不再计入。';
+  String get chartHowCostBody => '你仍持有的资产的买入成本。每笔买入加上 数量 × 价格 + 手续费，并按该笔交易当时的汇率换算。卖出时按比例扣减成本（平均成本法），因此已全部卖出的持仓不再计入。';
 
   @override
   String get chartHowValueTitle => '市值（实线）';
 
   @override
-  String get chartHowValueBody =>
-      '每一天：当天持有的数量（根据你的交易重建）× 当天收盘价，并按今天的汇率换算。周末和假日沿用上一个收盘价。基金没有历史价格，因此按你的交易价格逐步变化，并使用你开始刷新价格之后获取的价格。';
+  String get chartHowValueBody => '每一天：当天持有的数量（根据你的交易重建）× 当天收盘价，并按今天的汇率换算。周末和假日沿用上一个收盘价。基金没有历史价格，因此按你的交易价格逐步变化，并使用你开始刷新价格之后获取的价格。';
 
   @override
   String get chartHowGapTitle => '两条线之间的差距';
 
   @override
   String get chartHowGapBody => '这就是你的未实现盈亏。股息和已卖出实现的收益不在此图中，请查看下方“明细”和“收入”页。';
+
+  @override
+  String get settingsAbout => '关于';
+
+  @override
+  String get aboutVersion => '版本';
+
+  @override
+  String latestPrice(String price) {
+    return '最新价 $price';
+  }
+
+  @override
+  String get editEntry => '编辑记录';
+
+  @override
+  String get errBreaksHoldings => '这样会使之后的某笔卖出数量超过当时的持仓。请先修改或删除那笔卖出。';
+
+  @override
+  String get holdingDetails => '详情';
+
+  @override
+  String get detailMarketValue => '市值';
+
+  @override
+  String get detailUnits => '数量';
+
+  @override
+  String get detailAvgPrice => '平均成本价';
+
+  @override
+  String get detailLatestPrice => '最新价';
+
+  @override
+  String get detailCost => '成本';
+
+  @override
+  String get detailDividends => '已收股息';
+
+  @override
+  String get detailBroker => '券商';
+
+  @override
+  String get detailTarget => '目标占比';
+
+  @override
+  String get detailNotSet => '未设置';
+
+  @override
+  String get detailTransactions => '交易记录';
+
+  @override
+  String get detailEmpty => '此持仓暂无交易记录。';
 }

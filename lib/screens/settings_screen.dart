@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
 import '../app_scope.dart';
 import '../l10n/app_localizations.dart';
@@ -105,38 +106,7 @@ class SettingsScreen extends StatelessWidget {
       final shown = r.failedSymbols.take(4).join(', ') + (r.failedSymbols.length > 4 ? ' …' : '');
       text += '\n${t.pricesFailedList(shown)}';
     }
-    if (r.skippedFunds > 0) text += '\n${t.pricesFundSkipped(r.skippedFunds.toString())}';
     messenger.showSnackBar(SnackBar(content: Text(text)));
-  }
-
-  Future<void> _editFundApi(BuildContext context) async {
-    final t = AppLocalizations.of(context)!;
-    final controller = TextEditingController(text: settings.fundApiBaseUrl);
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.fundApiUrl),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(t.fundApiHelp, style: TextStyle(fontSize: 13, height: 1.4, color: ctx.colors.textSecondary)),
-            const SizedBox(height: 14),
-            TextField(
-              controller: controller,
-              keyboardType: TextInputType.url,
-              autocorrect: false,
-              decoration: InputDecoration(hintText: t.fundApiUrlHint),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(t.cancel)),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(t.save)),
-        ],
-      ),
-    );
-    if (ok == true) await settings.setFundApiBaseUrl(controller.text);
   }
 
   /// Turning the lock on (or off) needs one successful check first, so you
@@ -247,21 +217,44 @@ class SettingsScreen extends StatelessWidget {
                 value: prices.refreshing ? t.pricesUpdating : null,
                 onTap: prices.refreshing ? null : () => _refreshPrices(context),
               ),
-              _SettingRow(
-                title: t.fundApiUrl,
-                value: settings.fundApiBaseUrl.isEmpty ? t.fundApiNotSet : Uri.tryParse(settings.fundApiBaseUrl)?.host ?? settings.fundApiBaseUrl,
-                onTap: () => _editFundApi(context),
-              ),
 
               SectionLabel(t.settingsData),
               const HairlineDivider(),
               _SettingRow(title: t.importCsv, onTap: () => _importCsv(context)),
               _SettingRow(title: t.exportCsv, onTap: () => _exportCsv(context)),
               _SettingRow(title: t.clearAllData, titleColor: c.loss, onTap: () => _confirmClear(context)),
+
+              SectionLabel(t.settingsAbout),
+              const HairlineDivider(),
+              const _VersionRow(),
             ],
           );
         },
       ),
+    );
+  }
+}
+
+/// App version, read from pubspec.yaml (`version: 0.1.0+1` shows as "0.1.0 (1)").
+class _VersionRow extends StatefulWidget {
+  const _VersionRow();
+
+  @override
+  State<_VersionRow> createState() => _VersionRowState();
+}
+
+class _VersionRowState extends State<_VersionRow> {
+  late final Future<PackageInfo> _info = PackageInfo.fromPlatform();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    return FutureBuilder<PackageInfo>(
+      future: _info,
+      builder: (context, snap) {
+        final v = snap.data;
+        return _SettingRow(title: t.aboutVersion, value: v == null ? '' : '${v.version} (${v.buildNumber})');
+      },
     );
   }
 }

@@ -1,3 +1,4 @@
+import '../models/holding_record.dart';
 import '../models/dividend.dart';
 import '../models/enums.dart';
 import '../models/trade.dart';
@@ -72,3 +73,36 @@ List<Activity> buildActivity(List<Trade> trades, List<Dividend> dividends) {
   });
   return list;
 }
+
+/// True if, for every holding, no sale is ever larger than the units held on
+/// that day (replaying the trades in date order).
+bool tradesAreConsistent(List<Trade> trades) {
+  final byKey = <String, List<Trade>>{};
+  for (final t in trades) {
+    byKey.putIfAbsent(HoldingRecord.keyOf(t.accountId, t.symbol), () => []).add(t);
+  }
+  for (final list in byKey.values) {
+    list.sort((a, b) {
+      final c = a.tradeDate.compareTo(b.tradeDate);
+      if (c != 0) return c;
+      if (a.type != b.type) return a.type == TradeType.buy ? -1 : 1; // buys first within a day
+      return a.createdAt.compareTo(b.createdAt);
+    });
+    var qty = 0.0;
+    for (final t in list) {
+      if (t.type == TradeType.buy) {
+        qty += t.quantity;
+      } else {
+        if (t.quantity > qty + 1e-9) return false;
+        qty -= t.quantity;
+      }
+    }
+  }
+  return true;
+}
+
+/// An edit or delete is refused only if it makes things WORSE. Data that was
+/// already off (say, an import that sold more than it bought) never blocks
+/// an unrelated change.
+bool changeBreaksHoldings(List<Trade> before, List<Trade> after) =>
+    tradesAreConsistent(before) && !tradesAreConsistent(after);

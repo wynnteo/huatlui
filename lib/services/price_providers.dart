@@ -1,4 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:html/dom.dart' as dom;
+import 'package:html/parser.dart' as html_parser;
 import 'package:http/http.dart' as http;
 import '../models/price_point.dart';
 
@@ -105,44 +108,182 @@ class YahooPriceProvider implements PriceProvider {
   }
 }
 
-/// Unit trusts. Prices are scraped from FT / Aberdeen / OCBC by the web
-/// app's server (/api/fund-quote), which a phone can't do itself, so this
-/// calls that endpoint. It has no history, so each refresh is stored as one
-/// snapshot and the chart fills in over time.
+class _Found {
+  final double price;
+  final DateTime? asOf;
+  const _Found(this.price, this.asOf);
+}
+
+/// Unit trusts. There is no price API for these, so the pages are fetched and
+/// read directly on the phone, with the same selectors as the web app's
+/// /api/fund-quote:
+///   1. "ABRDN Global Dynamic Dividend" -> Aberdeen's fund page
+///   2. any other fund                  -> FT Markets, using "ISIN:CCY"
+///   3. if that finds nothing           -> OCBC's fund page, symbol as fund code
+/// Pages are requested at most ~1.4 times a second, like the web app does.
+/// There is no price history, so each fetch is stored as one dated snapshot
+/// and the chart fills in over time.
+///
+/// These are web pages, not APIs: if a site changes its layout the price
+/// stops coming through, and the holding is flagged "Price not updated" until
+/// the parser is adjusted (or you type the price in by hand).
 class FundPriceProvider implements PriceProvider {
   final http.Client _client;
-  final String Function() _baseUrl; // read lazily so Settings changes apply immediately
+  FundPriceProvider({http.Client? client}) : _client = client ?? http.Client();
 
-  FundPriceProvider({required String Function() baseUrl, http.Client? client})
-      : _baseUrl = baseUrl,
-        _client = client ?? http.Client();
+  static const _aberdeenUrl =
+      'https://www.aberdeeninvestments.com/en-sg/investor/funds/view-all-funds/abrdn-global-dynamic-dividend-fund-sgxz84873520?subTab=keyInformationTab';
+  static const _desktopAgent =
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36';
+
+  // ---- politeness: one request at a time, 700 ms apart -------------------
+  Future<void> _tail = Future.value();
+
+  Future<T> _throttled<T>(Future<T> Function() job) {
+    final done = Completer<T>();
+    _tail = _tail.then((_) async {
+      try {
+        done.complete(await job());
+      } catch (e, st) {
+        done.completeError(e, st);
+      }
+      await Future.delayed(const Duration(milliseconds: 700));
+    });
+    return done.future;
+  }
+
+  Future<String?> _get(String url, {String referer = 'https://markets.ft.com/'}) {
+    return _throttled<String?>(() async {
+      final res = await _client.get(Uri.parse(url), headers: {
+        'User-Agent': _desktopAgent,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Referer': referer,
+      }).timeout(const Duration(seconds: 15));
+      return res.statusCode == 200 ? res.body : null;
+    });
+  }
 
   @override
   Future<PriceQuote?> fetch(PriceRequest r) async {
-    final base = _baseUrl().trim().replaceAll(RegExp(r'/+$'), '');
-    if (base.isEmpty) return null;
+    final upperName = r.name.toUpperCase();
+    final isAbrdn = upperName.startsWith('ABRDN');
+    // FT wants "ISIN:CCY"; add the holding's currency if the symbol has none.
+    final ftSymbol = r.symbol.contains(':') ? r.symbol : '${r.symbol}:${r.currency}';
+    final fundCode = r.symbol.split(':').first;
 
-    // The endpoint wants "ISIN:CCY" (e.g. LU0320765646:SGD).
-    final s = r.symbol.contains(':') ? r.symbol : '${r.symbol}:${r.currency}';
-    final uri = Uri.parse('$base/api/fund-quote').replace(queryParameters: {'s': s, 'name': r.name});
+    _Found? found;
+    try {
+      if (isAbrdn) {
+        // Only this one Aberdeen page is known; another ABRDN fund would get
+        // the wrong price, so it goes straight to the OCBC fallback instead.
+        if (upperName.contains('GLOBAL DYNAMIC DIVIDEND')) {
+          final html = await _get(_aberdeenUrl, referer: 'https://www.aberdeeninvestments.com/en-sg/investor/funds/');
+          if (html != null) found = parseAberdeen(html);
+        }
+      } else {
+        final html = await _get('https://markets.ft.com/data/funds/tearsheet/summary?s=${Uri.encodeComponent(ftSymbol)}');
+        if (html != null) found = parseFt(html);
+      }
+    } catch (_) {
+      found = null;
+    }
 
-    final res = await _client.get(uri).timeout(const Duration(seconds: 25));
-    if (res.statusCode != 200) return null;
-    return parseFundQuote(jsonDecode(res.body), r.symbol, r.currency);
+    if (found == null) {
+      try {
+        final html = await _get(
+          'https://www.ocbc.com/personal-banking/investments/unit-trusts/funds-details?fundCode=${Uri.encodeComponent(fundCode)}',
+          referer: 'https://www.ocbc.com/',
+        );
+        if (html != null) found = parseOcbc(html);
+      } catch (_) {
+        found = null;
+      }
+    }
+    if (found == null) return null;
+
+    // Store the snapshot under the date the price is FOR, so refreshing twice
+    // on the same NAV doesn't add duplicate points.
+    final today = _dayOf(DateTime.now());
+    var snapshotDay = found.asOf == null ? today : _dayOf(found.asOf!);
+    if (snapshotDay.isAfter(today)) snapshotDay = today;
+
+    return PriceQuote(
+      symbol: r.symbol,
+      price: found.price,
+      currency: r.currency,
+      asOf: found.asOf ?? DateTime.now(),
+      history: [PricePoint(snapshotDay, found.price)],
+    );
   }
 
-  static PriceQuote? parseFundQuote(dynamic decoded, String symbol, String currency) {
-    if (decoded is! Map) return null;
-    final price = decoded['price'];
-    if (price is! num || price <= 0) return null;
-    final asOf = _parseLooseDate(decoded['lastUpdated']) ?? DateTime.now();
-    return PriceQuote(
-      symbol: symbol,
-      price: price.toDouble(),
-      currency: currency,
-      asOf: asOf,
-      history: [PricePoint(_dayOf(DateTime.now()), price.toDouble())],
-    );
+  // ---- page readers (pure, so they can be tested with saved pages) --------
+
+  static double? _toPrice(String? raw) {
+    if (raw == null) return null;
+    final v = double.tryParse(raw.replaceAll(RegExp(r'[,$\s—]'), ''));
+    return (v != null && v > 0) ? v : null;
+  }
+
+  /// FT Markets fund "tearsheet": a "Price" row in the data list, plus a
+  /// disclaimer like "Data delayed at least 15 minutes, as of Dec 10 2025."
+  static _Found? parseFt(String html) {
+    final doc = html_parser.parse(html);
+    String? priceText;
+    for (final dl in doc.querySelectorAll('dl.mod-ui-data-list')) {
+      final label = dl.querySelector('dt')?.text.trim().toLowerCase() ?? '';
+      if (label.contains('price') && priceText == null) {
+        priceText = dl.querySelector('dd.mod-ui-data-list__value')?.text.trim();
+      }
+    }
+    if (priceText == null || priceText.isEmpty) {
+      priceText = doc.querySelector('.mod-ui-data-list__value')?.text.trim();
+    }
+    final price = _toPrice(priceText);
+    if (price == null) return null;
+
+    final disclaimer = doc.querySelector('div.mod-disclaimer')?.text.trim() ?? '';
+    final m = RegExp(r'as of\s+(.+?)\.', caseSensitive: false).firstMatch(disclaimer);
+    return _Found(price, _parseLooseDate(m?.group(1) ?? disclaimer));
+  }
+
+  /// Aberdeen fund page: the block headed "Daily price" holds the value (an h4)
+  /// and the date (a "body-small" element).
+  static _Found? parseAberdeen(String html) {
+    final doc = html_parser.parse(html);
+    for (final el in doc.querySelectorAll('[class]')) {
+      if (!el.className.contains('section-header-small')) continue;
+      if (el.text.trim().toLowerCase() != 'daily price') continue;
+      final parent = el.parent;
+      if (parent == null) continue;
+      final valueEl = parent.querySelector('.h4') ?? parent.querySelector('h4');
+      final price = _toPrice(valueEl?.text);
+      if (price == null) continue;
+      dom.Element? dateEl;
+      for (final d in parent.querySelectorAll('[class]')) {
+        if (d.className.contains('body-small')) {
+          dateEl = d;
+          break;
+        }
+      }
+      return _Found(price, _parseLooseDate(dateEl?.text.trim()));
+    }
+    return null;
+  }
+
+  /// OCBC fund page: the block titled "Indicative price", value in <strong>,
+  /// date in "Updated as of ...".
+  static _Found? parseOcbc(String html) {
+    final doc = html_parser.parse(html);
+    for (final block in doc.querySelectorAll('.inner-content .block')) {
+      final title = block.querySelector('h4.title-text')?.text.trim().toLowerCase() ?? '';
+      if (!title.contains('indicative price')) continue;
+      final price = _toPrice(block.querySelector('.value-text strong')?.text);
+      if (price == null) continue;
+      final dateRaw = block.querySelector('p.small')?.text.replaceAll('Updated as of', '').trim();
+      return _Found(price, _parseLooseDate(dateRaw));
+    }
+    return null;
   }
 
   static const _months = {
@@ -150,15 +291,20 @@ class FundPriceProvider implements PriceProvider {
     'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12,
   };
 
-  /// FT says "Dec 10 2025", others use ISO or dd/mm/yyyy. Best effort; null if unsure.
-  static DateTime? _parseLooseDate(dynamic raw) {
-    if (raw is! String) return null;
+  /// "Dec 10 2025", "10 Dec 2025", ISO, or dd/mm/yyyy. Best effort; null if unsure.
+  static DateTime? _parseLooseDate(String? raw) {
+    if (raw == null) return null;
     final iso = DateTime.tryParse(raw);
     if (iso != null) return iso;
     final named = RegExp(r'([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2}),?\s+(\d{4})').firstMatch(raw);
     if (named != null) {
       final m = _months[named.group(1)!.toLowerCase()];
       if (m != null) return DateTime(int.parse(named.group(3)!), m, int.parse(named.group(2)!));
+    }
+    final dayFirst = RegExp(r'(\d{1,2})\s+([A-Za-z]{3})[a-z]*\.?,?\s+(\d{4})').firstMatch(raw);
+    if (dayFirst != null) {
+      final m = _months[dayFirst.group(2)!.toLowerCase()];
+      if (m != null) return DateTime(int.parse(dayFirst.group(3)!), m, int.parse(dayFirst.group(1)!));
     }
     final slashed = RegExp(r'(\d{1,2})/(\d{1,2})/(\d{4})').firstMatch(raw);
     if (slashed != null) {

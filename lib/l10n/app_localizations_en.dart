@@ -48,8 +48,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardEmptyTitle => 'No investments yet';
 
   @override
-  String get dashboardEmptyBody =>
-      'Add your first buy, or load sample data to see how HuatLui works.';
+  String get dashboardEmptyBody => 'Add your first buy, or load sample data to see how HuatLui works.';
 
   @override
   String get loadDemoData => 'Load sample data';
@@ -58,8 +57,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clearAllData => 'Clear all data';
 
   @override
-  String get clearAllDataConfirm =>
-      'This permanently deletes every account, holding, transaction and dividend on this device.';
+  String get clearAllDataConfirm => 'This permanently deletes every account, holding, transaction and dividend on this device.';
 
   @override
   String get cancel => 'Cancel';
@@ -150,14 +148,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String concentrationRiskOverTarget(
-      String label, String current, String target) {
+  String concentrationRiskOverTarget(String label, String current, String target) {
     return '$label is $current% of your portfolio, above your $target% target.';
   }
 
   @override
-  String concentrationRiskUnderTarget(
-      String label, String current, String target) {
+  String concentrationRiskUnderTarget(String label, String current, String target) {
     return '$label is $current% of your portfolio, below your $target% target.';
   }
 
@@ -258,8 +254,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pickHoldingHint => 'Pick an existing holding';
 
   @override
-  String get errAccountRequired =>
-      'Choose an account or enter a new account name.';
+  String get errAccountRequired => 'Choose an account or enter a new account name.';
 
   @override
   String get errSymbolRequired => 'Enter a symbol.';
@@ -275,21 +270,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get errDividendNeedsHolding =>
-      'To record a dividend, pick a holding you already own.';
+  String get errDividendNeedsHolding => 'To record a dividend, pick a holding you already own.';
 
   @override
   String get errFxRate => 'Enter a valid FX rate.';
-
-  @override
-  String editHoldingTitle(String symbol) {
-    return 'Update $symbol';
-  }
-
-  @override
-  String currentPriceLabel(String currency) {
-    return 'Current price ($currency)';
-  }
 
   @override
   String get targetPctLabel => 'Target % of portfolio (blank = none)';
@@ -304,8 +288,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get copyCsvTemplate => 'Copy CSV template';
 
   @override
-  String get templateCopied =>
-      'Template copied. Paste it into Excel or Google Sheets.';
+  String get templateCopied => 'Template copied. Paste it into Excel or Google Sheets.';
 
   @override
   String get importPreviewTitle => 'Ready to import';
@@ -453,12 +436,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chartCost => 'Cost';
 
   @override
-  String get chartNote =>
-      'Past values use today\'s exchange rates. Unit trusts fill in as you refresh prices.';
+  String get chartNote => 'Past values use today\'s exchange rates. Unit trusts fill in as you refresh prices.';
 
   @override
-  String get chartNeedsData =>
-      'Not enough history yet. Pull down on Overview or Holdings to refresh prices.';
+  String get chartNeedsData => 'Not enough history yet. Pull down on Overview or Holdings to refresh prices.';
 
   @override
   String get chartTotal => 'Total';
@@ -489,28 +470,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String pricesFundSkipped(String count) {
-    return '$count unit trust(s) skipped. Set the fund price API first.';
-  }
-
-  @override
   String get settingsPrices => 'Prices';
 
   @override
   String get refreshPrices => 'Refresh prices';
-
-  @override
-  String get fundApiUrl => 'Fund price API';
-
-  @override
-  String get fundApiUrlHint => 'https://your-app.vercel.app';
-
-  @override
-  String get fundApiNotSet => 'Not set';
-
-  @override
-  String get fundApiHelp =>
-      'Web address of your web app. Unit trust prices come from its /api/fund-quote.';
 
   @override
   String get assetClassCrypto => 'Crypto';
@@ -527,8 +490,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get exportCopied =>
-      'No file dialog available. The CSV was copied to the clipboard instead.';
+  String get exportCopied => 'No file dialog available. The CSV was copied to the clipboard instead.';
 
   @override
   String get filterDate => 'Date';
@@ -596,10 +558,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get fundApiMissing =>
-      'Unit trust prices need the fund price API. Set it in Settings → Prices.';
-
-  @override
   String pricesFailedList(String symbols) {
     return 'Could not price: $symbols';
   }
@@ -620,12 +578,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsLock => 'Biometric unlock';
 
   @override
-  String get settingsLockHelp =>
-      'Uses your fingerprint, face, or the phone’s screen lock. HuatLui locks again after 30 seconds in the background.';
+  String get settingsLockHelp => 'Uses your fingerprint, face, or the phone’s screen lock. HuatLui locks again after 30 seconds in the background.';
 
   @override
-  String get lockUnavailable =>
-      'Set up a fingerprint, face or screen lock on this phone first.';
+  String get lockUnavailable => 'Set up a fingerprint, face or screen lock on this phone first.';
 
   @override
   String get filterAll => 'All';
@@ -658,20 +614,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chartHowCostTitle => 'Cost (dashed line)';
 
   @override
-  String get chartHowCostBody =>
-      'What you paid for the holdings you still own. Each buy adds quantity × price plus fees, converted at that trade’s own exchange rate. A sale removes the same share of the cost (average-cost method), so fully sold positions drop out.';
+  String get chartHowCostBody => 'What you paid for the holdings you still own. Each buy adds quantity × price plus fees, converted at that trade’s own exchange rate. A sale removes the same share of the cost (average-cost method), so fully sold positions drop out.';
 
   @override
   String get chartHowValueTitle => 'Value (solid line)';
 
   @override
-  String get chartHowValueBody =>
-      'For each day: the units you held that day (rebuilt from your transactions) × that day’s closing price, converted at today’s exchange rate. Weekends and holidays reuse the last close. Unit trusts have no price history, so they step between your trade prices and the prices fetched since you started refreshing.';
+  String get chartHowValueBody => 'For each day: the units you held that day (rebuilt from your transactions) × that day’s closing price, converted at today’s exchange rate. Weekends and holidays reuse the last close. Unit trusts have no price history, so they step between your trade prices and the prices fetched since you started refreshing.';
 
   @override
   String get chartHowGapTitle => 'The gap between them';
 
   @override
-  String get chartHowGapBody =>
-      'That is your unrealised gain or loss. Dividends and gains already locked in by selling are not in this chart; see Breakdown below and the Income tab.';
+  String get chartHowGapBody => 'That is your unrealised gain or loss. Dividends and gains already locked in by selling are not in this chart; see Breakdown below and the Income tab.';
+
+  @override
+  String get settingsAbout => 'About';
+
+  @override
+  String get aboutVersion => 'Version';
+
+  @override
+  String latestPrice(String price) {
+    return 'Latest $price';
+  }
+
+  @override
+  String get editEntry => 'Edit entry';
+
+  @override
+  String get errBreaksHoldings => 'That would leave a later sale larger than the units you held. Change or delete the sale first.';
+
+  @override
+  String get holdingDetails => 'Details';
+
+  @override
+  String get detailMarketValue => 'Market value';
+
+  @override
+  String get detailUnits => 'Units';
+
+  @override
+  String get detailAvgPrice => 'Average price';
+
+  @override
+  String get detailLatestPrice => 'Latest price';
+
+  @override
+  String get detailCost => 'Cost';
+
+  @override
+  String get detailDividends => 'Dividends collected';
+
+  @override
+  String get detailBroker => 'Broker';
+
+  @override
+  String get detailTarget => 'Target weight';
+
+  @override
+  String get detailNotSet => 'Not set';
+
+  @override
+  String get detailTransactions => 'Transactions';
+
+  @override
+  String get detailEmpty => 'No transactions for this holding.';
 }

@@ -62,8 +62,7 @@ import 'app_localizations_zh.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,8 +70,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,8 +82,7 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
     delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
@@ -372,15 +369,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{label} is {current}% of your portfolio, above your {target}% target.'**
-  String concentrationRiskOverTarget(
-      String label, String current, String target);
+  String concentrationRiskOverTarget(String label, String current, String target);
 
   /// No description provided for @concentrationRiskUnderTarget.
   ///
   /// In en, this message translates to:
   /// **'{label} is {current}% of your portfolio, below your {target}% target.'**
-  String concentrationRiskUnderTarget(
-      String label, String current, String target);
+  String concentrationRiskUnderTarget(String label, String current, String target);
 
   /// No description provided for @concentrationRiskAbsolute.
   ///
@@ -597,18 +592,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter a valid FX rate.'**
   String get errFxRate;
-
-  /// No description provided for @editHoldingTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Update {symbol}'**
-  String editHoldingTitle(String symbol);
-
-  /// No description provided for @currentPriceLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Current price ({currency})'**
-  String currentPriceLabel(String currency);
 
   /// No description provided for @targetPctLabel.
   ///
@@ -946,12 +929,6 @@ abstract class AppLocalizations {
   /// **'{updated} updated, {failed} failed'**
   String pricesRefreshResult(String updated, String failed);
 
-  /// No description provided for @pricesFundSkipped.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} unit trust(s) skipped. Set the fund price API first.'**
-  String pricesFundSkipped(String count);
-
   /// No description provided for @settingsPrices.
   ///
   /// In en, this message translates to:
@@ -963,30 +940,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Refresh prices'**
   String get refreshPrices;
-
-  /// No description provided for @fundApiUrl.
-  ///
-  /// In en, this message translates to:
-  /// **'Fund price API'**
-  String get fundApiUrl;
-
-  /// No description provided for @fundApiUrlHint.
-  ///
-  /// In en, this message translates to:
-  /// **'https://your-app.vercel.app'**
-  String get fundApiUrlHint;
-
-  /// No description provided for @fundApiNotSet.
-  ///
-  /// In en, this message translates to:
-  /// **'Not set'**
-  String get fundApiNotSet;
-
-  /// No description provided for @fundApiHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Web address of your web app. Unit trust prices come from its /api/fund-quote.'**
-  String get fundApiHelp;
 
   /// No description provided for @assetClassCrypto.
   ///
@@ -1132,12 +1085,6 @@ abstract class AppLocalizations {
   /// **'Price as of {date}'**
   String priceAsOf(String date);
 
-  /// No description provided for @fundApiMissing.
-  ///
-  /// In en, this message translates to:
-  /// **'Unit trust prices need the fund price API. Set it in Settings → Prices.'**
-  String get fundApiMissing;
-
   /// No description provided for @pricesFailedList.
   ///
   /// In en, this message translates to:
@@ -1263,10 +1210,111 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'That is your unrealised gain or loss. Dividends and gains already locked in by selling are not in this chart; see Breakdown below and the Income tab.'**
   String get chartHowGapBody;
+
+  /// No description provided for @settingsAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get settingsAbout;
+
+  /// No description provided for @aboutVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get aboutVersion;
+
+  /// No description provided for @latestPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest {price}'**
+  String latestPrice(String price);
+
+  /// No description provided for @editEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit entry'**
+  String get editEntry;
+
+  /// No description provided for @errBreaksHoldings.
+  ///
+  /// In en, this message translates to:
+  /// **'That would leave a later sale larger than the units you held. Change or delete the sale first.'**
+  String get errBreaksHoldings;
+
+  /// No description provided for @holdingDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get holdingDetails;
+
+  /// No description provided for @detailMarketValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Market value'**
+  String get detailMarketValue;
+
+  /// No description provided for @detailUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'Units'**
+  String get detailUnits;
+
+  /// No description provided for @detailAvgPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Average price'**
+  String get detailAvgPrice;
+
+  /// No description provided for @detailLatestPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest price'**
+  String get detailLatestPrice;
+
+  /// No description provided for @detailCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Cost'**
+  String get detailCost;
+
+  /// No description provided for @detailDividends.
+  ///
+  /// In en, this message translates to:
+  /// **'Dividends collected'**
+  String get detailDividends;
+
+  /// No description provided for @detailBroker.
+  ///
+  /// In en, this message translates to:
+  /// **'Broker'**
+  String get detailBroker;
+
+  /// No description provided for @detailTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Target weight'**
+  String get detailTarget;
+
+  /// No description provided for @detailNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get detailNotSet;
+
+  /// No description provided for @detailTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Transactions'**
+  String get detailTransactions;
+
+  /// No description provided for @detailEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions for this holding.'**
+  String get detailEmpty;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -1275,25 +1323,25 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en':
-      return AppLocalizationsEn();
-    case 'zh':
-      return AppLocalizationsZh();
+    case 'en': return AppLocalizationsEn();
+    case 'zh': return AppLocalizationsZh();
   }
 
   throw FlutterError(
-      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.'
+  );
 }

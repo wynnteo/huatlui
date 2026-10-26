@@ -5,6 +5,7 @@ import '../models/enums.dart';
 import '../services/activity.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import '../widgets/activity_actions.dart';
 import '../widgets/activity_tile.dart';
 import '../widgets/currency_display.dart';
 import '../widgets/ui_helpers.dart';
@@ -238,28 +239,6 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     );
   }
 
-  // ---- delete ---------------------------------------------------------
-
-  Future<void> _confirmDelete(BuildContext context, Activity a) async {
-    final t = AppLocalizations.of(context)!;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.deleteEntryTitle),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(t.cancel)),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(t.delete)),
-        ],
-      ),
-    );
-    if (ok != true) return;
-    if (a.kind == ActivityKind.dividend) {
-      await repo.deleteDividend(a.id);
-    } else {
-      await repo.deleteTrade(a.id);
-    }
-  }
-
   // ---- build ----------------------------------------------------------
 
   @override
@@ -354,7 +333,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       ActivityTile(
                         activity: items[i],
                         accountName: accountNames[items[i].accountId] ?? '',
-                        onLongPress: () => _confirmDelete(context, items[i]),
+                        onTap: () => editActivity(context, items[i]),
+                        onLongPress: () => deleteActivity(context, items[i]),
                       ),
                     ],
                   ],

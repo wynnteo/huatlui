@@ -8,4 +8,4 @@ import 'theme/app_settings_controller.dart';
 final settings = AppSettingsController();
 final repo = PortfolioRepository();
 final fx = FxService();
-final prices = PriceController(repo: repo, settings: settings);
+final prices = PriceController(repo: repo);

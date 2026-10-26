@@ -11,9 +11,10 @@ import 'ui_helpers.dart';
 class ActivityTile extends StatelessWidget {
   final Activity activity;
   final String accountName;
+  final VoidCallback? onTap;
   final VoidCallback? onLongPress;
 
-  const ActivityTile({super.key, required this.activity, required this.accountName, this.onLongPress});
+  const ActivityTile({super.key, required this.activity, required this.accountName, this.onTap, this.onLongPress});
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +43,7 @@ class ActivityTile extends StatelessWidget {
     final amountText = isDividend ? CurrencyText.formatSigned(a.amount, a.currency) : CurrencyText.formatAmount(a.amount, a.currency);
 
     return InkWell(
+      onTap: onTap,
       onLongPress: onLongPress,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),

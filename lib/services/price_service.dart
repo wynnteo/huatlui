@@ -4,16 +4,14 @@ import 'package:uuid/uuid.dart';
 import '../models/enums.dart';
 import '../models/holding_record.dart';
 import '../models/price_point.dart';
-import '../theme/app_settings_controller.dart';
 import 'portfolio_repository.dart';
 import 'price_providers.dart';
 
 class PriceRefreshResult {
   final int updated;
   final int failed;
-  final int skippedFunds; // unit trusts skipped because no fund API is set
   final List<String> failedSymbols;
-  const PriceRefreshResult({this.updated = 0, this.failed = 0, this.skippedFunds = 0, this.failedSymbols = const []});
+  const PriceRefreshResult({this.updated = 0, this.failed = 0, this.failedSymbols = const []});
 }
 
 class _Target {
@@ -32,17 +30,15 @@ class _Target {
 /// brokers is fetched once and applied to both.
 class PriceController extends ChangeNotifier {
   final PortfolioRepository repo;
-  final AppSettingsController settings;
   final PriceProvider stocks;
   final PriceProvider funds;
 
   PriceController({
     required this.repo,
-    required this.settings,
     PriceProvider? stocks,
     PriceProvider? funds,
   })  : stocks = stocks ?? YahooPriceProvider(),
-        funds = funds ?? FundPriceProvider(baseUrl: () => settings.fundApiBaseUrl);
+        funds = funds ?? FundPriceProvider();
 
   bool _refreshing = false;
   bool get refreshing => _refreshing;
@@ -114,7 +110,6 @@ class PriceController extends ChangeNotifier {
     // 2. Fetch, a few at a time so we stay polite to the sources.
     final results = <String, PriceQuote>{};
     var failed = 0;
-    var skipped = 0;
     final failedNames = <String>[];
     final list = targets.entries.toList();
     for (var i = 0; i < list.length; i += 4) {
@@ -122,10 +117,6 @@ class PriceController extends ChangeNotifier {
       await Future.wait(chunk.map((e) async {
         final tg = e.value;
         final isFund = tg.assetClass == AssetClass.unitTrust;
-        if (isFund && settings.fundApiBaseUrl.trim().isEmpty) {
-          skipped++;
-          return;
-        }
         try {
           final q = await (isFund ? funds : stocks).fetch(
             PriceRequest(symbol: tg.symbol, name: tg.name, currency: tg.currency, since: tg.since),
@@ -174,6 +165,6 @@ class PriceController extends ChangeNotifier {
     final history = {for (final e in results.entries) e.key: e.value.history};
     await repo.applyPriceRefresh(updates, history);
 
-    return PriceRefreshResult(updated: results.length, failed: failed, skippedFunds: skipped, failedSymbols: failedNames);
+    return PriceRefreshResult(updated: results.length, failed: failed, failedSymbols: failedNames);
   }
 }

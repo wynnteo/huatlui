@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
 import '../app_scope.dart';
 import '../l10n/app_localizations.dart';
 import '../models/enums.dart';
-import '../models/holding_record.dart';
-import '../services/parse_utils.dart';
 import '../services/portfolio_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../widgets/currency_display.dart';
 import '../widgets/ui_helpers.dart';
+import 'holding_detail_screen.dart';
 
 /// Per-item screen, so every amount here is in the holding's OWN currency.
 class HoldingsScreen extends StatelessWidget {
@@ -23,62 +21,6 @@ class HoldingsScreen extends StatelessWidget {
     if (updated == null) return t.priceNotUpdated;
     if (DateTime.now().difference(updated).inDays >= 7) return t.priceAsOf(fmtDate(updated));
     return null;
-  }
-
-  Future<void> _edit(BuildContext context, Position p) async {
-    final t = AppLocalizations.of(context)!;
-    final existing = repo.holdingFor(p.accountId, p.symbol);
-    final priceCtrl = TextEditingController(text: p.currentPrice.toString());
-    final targetCtrl = TextEditingController(text: existing?.targetPct?.toString() ?? '');
-
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.editHoldingTitle(p.symbol)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: priceCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(labelText: t.currentPriceLabel(p.currency)),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: targetCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(labelText: t.targetPctLabel),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(t.cancel)),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(t.save)),
-        ],
-      ),
-    );
-    if (ok != true) return;
-
-    final price = parseNumber(priceCtrl.text);
-    if (price == null || price < 0) return;
-    final target = parseNumber(targetCtrl.text);
-
-    final record = existing ??
-        HoldingRecord(
-          id: const Uuid().v4(),
-          accountId: p.accountId,
-          symbol: p.symbol,
-          name: p.name,
-          assetClass: p.assetClass,
-          currency: p.currency,
-          currentPrice: price,
-        );
-    await repo.putHolding(record.copyWith(
-      currentPrice: price,
-      priceUpdatedAt: DateTime.now(),
-      targetPct: target,
-      clearTarget: target == null,
-    ));
   }
 
   @override
@@ -122,7 +64,14 @@ class HoldingsScreen extends StatelessWidget {
                   ),
                   const HairlineDivider(),
                   for (final p in open.where((p) => p.accountId == account.id)) ...[
-                    _HoldingRow(position: p, priceNote: _priceNote(t, p), onTap: () => _edit(context, p)),
+                    _HoldingRow(
+                      position: p,
+                      priceNote: _priceNote(t, p),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => HoldingDetailScreen(accountId: p.accountId, symbol: p.symbol)),
+                      ),
+                    ),
                     const HairlineDivider(),
                   ],
                 ],
@@ -164,7 +113,7 @@ class _HoldingRow extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(p.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: c.textSecondary)),
                 const SizedBox(height: 2),
-                Text('${fmtQty(p.quantity)} @ ${CurrencyText.formatAmount(p.avgCostLocal, p.currency)}',
+                Text('${fmtQty(p.quantity)} @ ${CurrencyText.formatPrice(p.avgCostLocal, p.currency)}',
                     style: TextStyle(fontSize: 11, color: c.textTertiary)),
               ],
             ),
@@ -180,6 +129,10 @@ class _HoldingRow extends StatelessWidget {
               if (priceNote != null) ...[
                 const SizedBox(height: 2),
                 Text(priceNote!, style: TextStyle(fontSize: 11, color: c.warning)),
+              ] else if (p.assetClass != AssetClass.cash && p.currentPrice > 0) ...[
+                const SizedBox(height: 2),
+                Text(AppLocalizations.of(context)!.latestPrice(CurrencyText.formatPrice(p.currentPrice, p.currency)),
+                    style: TextStyle(fontSize: 11, color: c.textTertiary)),
               ],
             ],
           ),

@@ -54,6 +54,15 @@ class CurrencyText extends StatelessWidget {
     return '$sign$symbol$formatted';
   }
 
+  /// Unit prices keep up to 4 decimals (fund NAVs like 1.3141) but never
+  /// fewer than 2: "1.31", "1.3141", "191.54".
+  static String formatPrice(double amount, String currencyCode) {
+    final symbol = _symbols[currencyCode] ?? '$currencyCode ';
+    final sign = amount < 0 ? '-' : '';
+    final formatted = NumberFormat('#,##0.00##').format(amount.abs());
+    return '$sign$symbol$formatted';
+  }
+
   /// "+S$1,200.00" / "-S$300.00" - for gains, losses and returns.
   static String formatSigned(double amount, String currencyCode) {
     final body = formatAmount(amount.abs(), currencyCode);
