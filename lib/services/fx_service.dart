@@ -1,11 +1,26 @@
-/// POC exchange rates: the value of 1 unit of each currency in SGD.
-/// Replace [defaultToSgd] with a real rate source later (an API, cached by
-/// date); nothing outside this class needs to change.
+/// Currency conversion rates expressed as SGD per unit of foreign currency.
+///
+/// Default rates are indicative *offline placeholders*, not live quotes.
+/// Historical trade records retain their recorded FX rate. Never silently
+/// treat an unknown currency as 1:1: that misstates financial totals.
 class FxService {
   final Map<String, double> _toSgd;
 
-  FxService([Map<String, double>? toSgd]) : _toSgd = toSgd ?? defaultToSgd;
+  FxService([Map<String, double>? toSgd])
+      : _toSgd = Map.unmodifiable({
+          for (final entry in (toSgd ?? defaultToSgd).entries)
+            entry.key.trim().toUpperCase(): entry.value,
+        }) {
+    for (final entry in _toSgd.entries) {
+      if (entry.key.isEmpty ||
+          !entry.value.isFinite ||
+          entry.value <= 0) {
+        throw ArgumentError.value(entry.value, entry.key, 'FX rates must be finite and positive');
+      }
+    }
+  }
 
+  /// Indicative fallback values only; not real-time FX market data.
   static const Map<String, double> defaultToSgd = {
     'SGD': 1.0,
     'USD': 1.34,
@@ -18,33 +33,37 @@ class FxService {
 
   List<String> get supportedCurrencies => _toSgd.keys.toList();
 
-  /// Today's rate: how many [to] you get for 1 [from].
+  /// How many units of [to] are obtained from one unit of [from].
+  /// Unsupported currencies throw instead of being treated as equivalent.
   double rate(String from, String to) {
-    if (from == to) return 1.0;
-    final f = _toSgd[from];
-    final t = _toSgd[to];
-    if (f == null || t == null || t == 0) return 1.0; // unknown currency: leave unconverted instead of crashing
+    final source = from.trim().toUpperCase();
+    final target = to.trim().toUpperCase();
+    final f = _toSgd[source];
+    final t = _toSgd[target];
+    if (f == null) throw ArgumentError.value(from, 'from', 'Unsupported currency');
+    if (t == null) throw ArgumentError.value(to, 'to', 'Unsupported currency');
+    if (source == target) return 1.0;
     return f / t;
   }
 
-  double convert(double amount, String from, String to) => amount * rate(from, to);
+  double convert(double amount, String from, String to) =>
+      amount * rate(from, to);
 
-  /// Converts a stored historical amount into [targetBase].
-  ///
-  /// [fxRate] was recorded on the day, against [fxBase]. If the user's base
-  /// currency is still [fxBase] this is exact. If they changed base
-  /// currency since, the amount is first put into [fxBase] with the
-  /// recorded rate, then moved to [targetBase] at today's rate - the
-  /// original-currency leg stays historically accurate, only the
-  /// base-to-base leg uses today's rate.
+  /// Uses the recorded trade-date rate for the original leg, then converts
+  /// from its historical base to the displayed base with the available rate.
   double toBaseHistorical({
     required double amount,
     required double fxRate,
     required String fxBase,
     required String targetBase,
   }) {
-    final inFxBase = amount * fxRate;
-    if (fxBase == targetBase) return inFxBase;
-    return inFxBase * rate(fxBase, targetBase);
+    if (!fxRate.isFinite || fxRate <= 0) {
+      throw ArgumentError.value(fxRate, 'fxRate', 'Historical FX rate must be finite and positive');
+    }
+    final recorded = amount * fxRate;
+    if (fxBase.trim().toUpperCase() == targetBase.trim().toUpperCase()) {
+      return recorded;
+    }
+    return recorded * rate(fxBase, targetBase);
   }
 }
