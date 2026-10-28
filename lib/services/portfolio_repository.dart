@@ -6,6 +6,7 @@ import '../models/holding_record.dart';
 import '../models/price_point.dart';
 import '../models/trade.dart';
 import 'csv_import.dart';
+import 'activity.dart';
 import 'demo_data.dart';
 
 /// Local storage for the POC. Everything is saved as plain JSON maps in
@@ -104,6 +105,10 @@ class PortfolioRepository extends ChangeNotifier {
 
   /// Writes everything from a CSV import in one go (one reload, one notify).
   Future<void> applyImport(ImportPlan plan) async {
+    // Validate the complete post-import history before making any writes.
+    if (!tradesAreConsistent([...trades, ...plan.trades])) {
+      throw StateError('Import would create a sale exceeding available shares');
+    }
     for (final a in plan.newAccounts) {
       await _accountsBox.put(a.id, a.toJson());
     }

@@ -1,9 +1,9 @@
-import 'dart:math' as math;
 import '../models/dividend.dart';
 import '../models/enums.dart';
 import '../models/holding_record.dart';
 import '../models/trade.dart';
 import 'fx_service.dart';
+import 'activity.dart';
 
 /// A derived position for one symbol in one account.
 class Position {
@@ -135,10 +135,7 @@ class PortfolioService {
     final keys = {...tradesByKey.keys, ...divsByKey.keys};
     for (final key in keys) {
       final list = (tradesByKey[key] ?? <Trade>[])
-        ..sort((a, b) {
-          final c = a.tradeDate.compareTo(b.tradeDate);
-          return c != 0 ? c : a.createdAt.compareTo(b.createdAt);
-        });
+        ..sort(compareTradesForAccounting);
       final divs = divsByKey[key] ?? const <Dividend>[];
 
       double qty = 0, costLocal = 0, costBase = 0, realizedBase = 0, realizedLocal = 0, boughtBase = 0;
@@ -152,8 +149,10 @@ class PortfolioService {
           costBase += cashBase;
           boughtBase += cashBase;
         } else {
-          if (qty <= 1e-9) continue; // selling what we don't hold: ignore bad data
-          final sellQty = math.min(t.quantity, qty);
+          if (t.quantity > qty + 1e-9) {
+            throw StateError('Sell exceeds available shares for ${t.symbol} in account ${t.accountId}');
+          }
+          final sellQty = t.quantity;
           final share = sellQty / qty;
           final costOutLocal = costLocal * share; // weighted-average cost
           final costOutBase = costBase * share;

@@ -74,6 +74,16 @@ List<Activity> buildActivity(List<Trade> trades, List<Dividend> dividends) {
   return list;
 }
 
+/// Consistent transaction ordering for both validation and cost accounting.
+/// Buys precede sells on the same day because trade records have no execution time.
+int compareTradesForAccounting(Trade a, Trade b) {
+  final date = a.tradeDate.compareTo(b.tradeDate);
+  if (date != 0) return date;
+  if (a.type != b.type) return a.type == TradeType.buy ? -1 : 1;
+  final created = a.createdAt.compareTo(b.createdAt);
+  return created != 0 ? created : a.id.compareTo(b.id);
+}
+
 /// True if, for every holding, no sale is ever larger than the units held on
 /// that day (replaying the trades in date order).
 bool tradesAreConsistent(List<Trade> trades) {
@@ -82,12 +92,7 @@ bool tradesAreConsistent(List<Trade> trades) {
     byKey.putIfAbsent(HoldingRecord.keyOf(t.accountId, t.symbol), () => []).add(t);
   }
   for (final list in byKey.values) {
-    list.sort((a, b) {
-      final c = a.tradeDate.compareTo(b.tradeDate);
-      if (c != 0) return c;
-      if (a.type != b.type) return a.type == TradeType.buy ? -1 : 1; // buys first within a day
-      return a.createdAt.compareTo(b.createdAt);
-    });
+    list.sort(compareTradesForAccounting);
     var qty = 0.0;
     for (final t in list) {
       if (t.type == TradeType.buy) {
