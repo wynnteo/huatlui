@@ -14,6 +14,7 @@ import '../widgets/activity_tile.dart';
 import '../widgets/currency_display.dart';
 import '../widgets/ui_helpers.dart';
 import 'entry_form_screen.dart';
+import 'investment_review_editor.dart';
 
 /// One holding in full: the facts about it at the top, then every buy, sell
 /// and dividend that makes it up. Amounts are in the holding's own currency
@@ -179,6 +180,26 @@ class HoldingDetailScreen extends StatelessWidget {
                   onTap: () => _editTarget(context, record, p!),
                 ),
 
+                if (record != null) ...[
+                  SectionLabel(Localizations.localeOf(context).languageCode == 'zh' ? '投资复核' : 'Investment review'),
+                  const HairlineDivider(),
+                  _Row(
+                    label: Localizations.localeOf(context).languageCode == 'zh' ? '状态' : 'Status',
+                    value: reviewStatusLabel(record.reviewStatus, Localizations.localeOf(context).languageCode == 'zh'),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => InvestmentReviewEditor(holding: record))),
+                  ),
+                  if (record.nextReviewDate != null)
+                    _Row(
+                      label: Localizations.localeOf(context).languageCode == 'zh' ? '下次复核' : 'Next review',
+                      value: DateFormat('yyyy-MM-dd').format(record.nextReviewDate!),
+                      note: reviewDue(record, DateTime.now()) ? (Localizations.localeOf(context).languageCode == 'zh' ? '待复核' : 'Review due') : null,
+                      noteWarn: reviewDue(record, DateTime.now()),
+                    ),
+                  if ((record.investmentThesis ?? '').isNotEmpty)
+                    Text(record.investmentThesis!, style: TextStyle(color: c.textSecondary)),
+                  if ((record.reviewNotes ?? '').isNotEmpty)
+                    Text(record.reviewNotes!, style: TextStyle(color: c.textTertiary)),
+                ],
                 SectionLabel('${t.detailTransactions} · ${activities.length}'),
                 if (activities.isEmpty) Text(t.detailEmpty, style: TextStyle(color: c.textSecondary)),
                 for (var i = 0; i < activities.length; i++) ...[
