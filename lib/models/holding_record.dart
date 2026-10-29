@@ -26,6 +26,8 @@ class HoldingRecord {
   final String? investmentThesis;
   final String? reviewNotes;
   final DateTime? nextReviewDate;
+  final double? alertBelow;
+  final double? alertAbove;
 
   const HoldingRecord({
     required this.id,
@@ -41,6 +43,8 @@ class HoldingRecord {
     this.investmentThesis,
     this.reviewNotes,
     this.nextReviewDate,
+    this.alertBelow,
+    this.alertAbove,
   });
 
   String get key => keyOf(accountId, symbol);
@@ -56,6 +60,10 @@ class HoldingRecord {
     String? reviewNotes,
     DateTime? nextReviewDate,
     bool clearReviewDate = false,
+    double? alertBelow,
+    double? alertAbove,
+    bool clearAlertBelow = false,
+    bool clearAlertAbove = false,
   }) {
     return HoldingRecord(
       id: id,
@@ -71,6 +79,8 @@ class HoldingRecord {
       investmentThesis: investmentThesis ?? this.investmentThesis,
       reviewNotes: reviewNotes ?? this.reviewNotes,
       nextReviewDate: clearReviewDate ? null : (nextReviewDate ?? this.nextReviewDate),
+      alertBelow: clearAlertBelow ? null : (alertBelow ?? this.alertBelow),
+      alertAbove: clearAlertAbove ? null : (alertAbove ?? this.alertAbove),
     );
   }
 
@@ -88,6 +98,8 @@ class HoldingRecord {
         'investmentThesis': investmentThesis,
         'reviewNotes': reviewNotes,
         'nextReviewDate': nextReviewDate?.toIso8601String(),
+        'alertBelow': alertBelow,
+        'alertAbove': alertAbove,
       };
 
   factory HoldingRecord.fromJson(Map<String, dynamic> j) => HoldingRecord(
@@ -104,5 +116,7 @@ class HoldingRecord {
         investmentThesis: j['investmentThesis'] as String?,
         reviewNotes: j['reviewNotes'] as String?,
         nextReviewDate: j['nextReviewDate'] == null ? null : DateTime.parse(j['nextReviewDate'] as String),
+        alertBelow: (j['alertBelow'] as num?)?.toDouble(),
+        alertAbove: (j['alertAbove'] as num?)?.toDouble(),
       );
 }
