@@ -10,7 +10,7 @@ import 'package:huatlui/services/price_service.dart';
 class FakeRepository extends PortfolioRepository {
   List<HoldingRecord> saved = [];
   @override
-  Future<void> applyPriceRefresh(List<HoldingRecord> updated, Map<String, List<PricePoint>> history) async {
+  Future<void> applyPriceRefresh(List<HoldingRecord> updated, Map<String, List<PricePoint>> history, {int? expectedGeneration}) async {
     saved = updated;
     for (final h in updated) {
       holdings.removeWhere((old) => old.key == h.key);
