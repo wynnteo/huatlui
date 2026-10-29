@@ -9,6 +9,7 @@ import '../l10n/app_localizations.dart';
 import '../services/csv_export.dart';
 import '../services/csv_import.dart';
 import '../services/lock_service.dart';
+import '../services/portfolio_backup.dart';
 import '../theme/app_colors.dart';
 import '../widgets/ui_helpers.dart';
 
@@ -93,6 +94,81 @@ class SettingsScreen extends StatelessWidget {
       // No file dialog on this device: fall back to the clipboard.
       await Clipboard.setData(ClipboardData(text: csv));
       messenger.showSnackBar(SnackBar(content: Text(t.exportCopied)));
+    }
+  }
+
+  Future<void> _exportBackup(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final backup = PortfolioBackup(
+        accounts: repo.accounts,
+        holdings: repo.holdings,
+        trades: repo.trades,
+        dividends: repo.dividends,
+        priceHistory: repo.priceHistory,
+        baseCurrency: settings.baseCurrency,
+        locale: settings.locale.languageCode,
+        themeMode: settings.themeMode.name,
+      );
+      final saved = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save HuatLui backup',
+        fileName: 'huatlui_backup_${fmtDate(DateTime.now())}.json',
+        type: FileType.custom,
+        allowedExtensions: const ['json'],
+        bytes: Uint8List.fromList(utf8.encode(backup.encode())),
+      );
+      if (saved != null) {
+        messenger.showSnackBar(const SnackBar(content: Text('Backup saved. Keep it in a secure location.')));
+      }
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Backup failed: $e')));
+    }
+  }
+
+  Future<void> _restoreBackup(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: const ['json'],
+        withData: true,
+      );
+      if (result == null || result.files.isEmpty) return;
+      final bytes = result.files.single.bytes;
+      if (bytes == null) throw const FormatException('No backup file data');
+      final backup = PortfolioBackup.decode(utf8.decode(bytes));
+      if (!context.mounted) return;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Restore portfolio backup?'),
+          content: Text(
+            'This will REPLACE your current portfolio data on this device.\\n\\n'
+            'Accounts: ${backup.accounts.length}\\n'
+            'Holdings: ${backup.holdings.length}\\n'
+            'Trades: ${backup.trades.length}\\n'
+            'Dividends: ${backup.dividends.length}\\n\\n'
+            'Create and save a backup of your current portfolio first. '
+            'Device lock preferences will not be changed.',
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel')),
+            FilledButton(onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Replace & restore')),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+      await repo.restoreBackup(backup);
+      await settings.setBaseCurrency(backup.baseCurrency);
+      await settings.setLocale(Locale(backup.locale));
+      await settings.setThemeMode(ThemeMode.values.byName(backup.themeMode));
+      if (context.mounted) {
+        messenger.showSnackBar(const SnackBar(content: Text('Portfolio backup restored successfully.')));
+      }
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Restore failed: $e')));
     }
   }
 
@@ -250,6 +326,8 @@ class SettingsScreen extends StatelessWidget {
 
               SectionLabel(t.settingsData),
               const HairlineDivider(),
+              _SettingRow(title: 'Save full backup (JSON)', onTap: () => _exportBackup(context)),
+              _SettingRow(title: 'Restore full backup (JSON)', onTap: () => _restoreBackup(context)),
               _SettingRow(title: t.importCsv, onTap: () => _importCsv(context)),
               _SettingRow(title: t.exportCsv, onTap: () => _exportCsv(context)),
               _SettingRow(title: t.clearAllData, titleColor: c.loss, onTap: () => _confirmClear(context)),
