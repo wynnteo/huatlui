@@ -14,6 +14,7 @@ import '../widgets/activity_tile.dart';
 import '../widgets/currency_display.dart';
 import '../widgets/ui_helpers.dart';
 import 'entry_form_screen.dart';
+import 'what_if_buy_screen.dart';
 
 /// One holding in full: the facts about it at the top, then every buy, sell
 /// and dividend that makes it up. Amounts are in the holding's own currency
@@ -155,6 +156,24 @@ class HoldingDetailScreen extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text('≈ ${CurrencyText.formatAmount(p.marketValueBase, base)}', style: TextStyle(fontSize: 12, color: c.textTertiary)),
                   ],
+                ],
+
+                if (isOpen) ...[
+                  const SizedBox(height: 20),
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.calculate_outlined),
+                    label: Text(Localizations.localeOf(context).languageCode == 'zh'
+                        ? '模拟加仓' : 'What-if buy'),
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => WhatIfBuyScreen(
+                          accountId: accountId,
+                          symbol: symbol,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
 
                 SectionLabel(t.holdingDetails),
