@@ -13,6 +13,23 @@ String reviewStatusLabel(InvestmentReviewStatus status, bool zh) {
   }
 }
 
+/// Color meanings are review priorities, NOT automated trade instructions.
+/// Green: potential addition; yellow/amber: observe/hold; red: review reduction/exit.
+Color reviewStatusColor(InvestmentReviewStatus status) {
+  switch (status) {
+    case InvestmentReviewStatus.addCandidate:
+      return const Color(0xFF238A61);
+    case InvestmentReviewStatus.hold:
+      return const Color(0xFFB78A21);
+    case InvestmentReviewStatus.watch:
+      return const Color(0xFFB78A21);
+    case InvestmentReviewStatus.reduceReview:
+      return const Color(0xFFC34D4D);
+    case InvestmentReviewStatus.exitReview:
+      return const Color(0xFFC34D4D);
+  }
+}
+
 bool reviewDue(HoldingRecord record, DateTime now) {
   final due = record.nextReviewDate;
   if (due == null) return false;
@@ -73,12 +90,21 @@ class _InvestmentReviewEditorState extends State<InvestmentReviewEditor> {
             items: [
               for (final status in InvestmentReviewStatus.values)
                 DropdownMenuItem(value: status,
-                  child: Text(reviewStatusLabel(status, zh))),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.circle, size: 10, color: reviewStatusColor(status)),
+                    const SizedBox(width: 10),
+                    Text(reviewStatusLabel(status, zh)),
+                  ])),
             ],
             onChanged: (next) {
               if (next != null) setState(() => _status = next);
             },
           ),
+          const SizedBox(height: 8),
+          Text(zh
+            ? '绿色 = 考虑加仓；黄色 = 持有或观察；红色 = 考虑减仓或退出。仅为你设置的状态，不构成交易建议。'
+            : 'Green = consider adding; amber = hold/watch; red = review reducing/exiting. These are your labels, not trade recommendations.',
+            style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
           const SizedBox(height: 18),
           TextField(
             controller: _thesis,

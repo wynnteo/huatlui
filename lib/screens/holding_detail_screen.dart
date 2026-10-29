@@ -7,6 +7,7 @@ import '../models/holding_record.dart';
 import '../services/activity.dart';
 import '../services/parse_utils.dart';
 import '../services/portfolio_service.dart';
+import '../services/holdings_view.dart';
 import '../services/price_alerts.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
@@ -161,6 +162,9 @@ class HoldingDetailScreen extends StatelessWidget {
 
             final feesLocal = trades.fold<double>(0, (s, x) => s + x.fees);
             final dividendsLocal = divs.fold<double>(0, (s, d) => s + d.netAmount);
+            final year = DateTime.now().year;
+            final dividendsYtd = netDividendsForYear(
+              dividends: divs, accountId: accountId, symbol: symbol, year: year);
             final ccy = p.currency;
 
             final updated = record?.priceUpdatedAt;
@@ -266,6 +270,11 @@ class HoldingDetailScreen extends StatelessWidget {
                 if (isOpen) _Row(label: t.detailCost, value: CurrencyText.formatAmount(p.costLocal, ccy)),
                 _Row(label: t.realisedGain, value: CurrencyText.formatSigned(p.realizedLocal, ccy), color: signColor(context, p.realizedLocal)),
                 _Row(label: t.detailDividends, value: CurrencyText.formatSigned(dividendsLocal, ccy), color: signColor(context, dividendsLocal)),
+                _Row(label: Localizations.localeOf(context).languageCode == 'zh'
+                  ? '${year}年已收股息（税后）' : 'Dividends collected $year (net)',
+                  value: CurrencyText.formatAmount(dividendsYtd, ccy),
+                  color: signColor(context, dividendsYtd)),
+
                 _Row(label: t.feesPaid, value: CurrencyText.formatAmount(feesLocal, ccy)),
                 _Row(label: t.detailBroker, value: accountName),
                 _Row(
@@ -280,6 +289,7 @@ class HoldingDetailScreen extends StatelessWidget {
                   _Row(
                     label: Localizations.localeOf(context).languageCode == 'zh' ? '状态' : 'Status',
                     value: reviewStatusLabel(record.reviewStatus, Localizations.localeOf(context).languageCode == 'zh'),
+                    color: reviewStatusColor(record.reviewStatus),
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => InvestmentReviewEditor(holding: record))),
                   ),
                   if (record.nextReviewDate != null)
