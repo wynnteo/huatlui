@@ -104,8 +104,8 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 !fx.hasLiveData
-                    ? 'FX: indicative offline rates (not current market data)'
-                    : 'FX: ${fx.isStale ? 'cached' : 'daily reference'} rates as of '
+                    ? t.fxDashboardIndicative
+                    : '${fx.isStale ? t.fxDashboardCached : t.fxDashboardReference} '
                         '${fx.asOf?.year}-${fx.asOf?.month.toString().padLeft(2, '0')}-'
                         '${fx.asOf?.day.toString().padLeft(2, '0')}',
                 style: TextStyle(fontSize: 11, color: c.textTertiary),
