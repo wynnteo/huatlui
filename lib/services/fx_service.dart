@@ -86,7 +86,6 @@ class FxService extends ChangeNotifier {
   static Map<String, double> parseFrankfurterRates(dynamic response) {
     if (response is! List) throw const FormatException('Expected FX rate list');
     final rates = <String, double>{'SGD': 1.0};
-    DateTime? day;
     for (final item in response) {
       if (item is! Map || item['base']?.toString().toUpperCase() != 'SGD') {
         throw const FormatException('Unexpected FX base');
@@ -97,10 +96,7 @@ class FxService extends ChangeNotifier {
       if (quote == null || value is! num || !value.toDouble().isFinite ||
           value <= 0 || rawDay == null) throw const FormatException('Invalid FX quote');
       final date = DateTime.tryParse(rawDay);
-      if (date == null || (day != null && day != date)) {
-        throw const FormatException('Inconsistent FX date');
-      }
-      day = date;
+      if (date == null) throw const FormatException('Invalid FX date');
       rates[quote] = 1 / value.toDouble();
     }
     if (!_quotes.every(rates.containsKey)) throw const FormatException('Missing required FX quotes');
@@ -125,7 +121,9 @@ class FxService extends ChangeNotifier {
       if (res.statusCode != 200) throw FormatException('FX API HTTP ${res.statusCode}');
       final json = jsonDecode(res.body);
       final rates = parseFrankfurterRates(json);
-      final asOf = DateTime.parse((json as List).first['date'] as String);
+      // Quote publication dates may differ. Show the oldest as-of date.
+      final asOf = (json as List).map((e) => DateTime.parse(e['date'] as String))
+          .reduce((a, b) => a.isBefore(b) ? a : b);
       final fetched = DateTime.now();
       // Persist a complete consistent snapshot before switching active rates.
       final box = _box;
