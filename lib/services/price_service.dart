@@ -43,22 +43,37 @@ class PriceController extends ChangeNotifier {
   bool _refreshing = false;
   bool get refreshing => _refreshing;
 
-  /// The most recent time any holding's price was refreshed.
+  /// Oldest successful refresh among tracked holdings. A newly imported
+  /// holding or a failed refresh must not be hidden by a newer quote.
   DateTime? get lastUpdated {
-    DateTime? latest;
+    if (repo.holdings.isEmpty) return null;
+    DateTime? oldest;
     for (final h in repo.holdings) {
+      if (h.assetClass == AssetClass.cash) continue;
       final t = h.priceUpdatedAt;
-      if (t != null && (latest == null || t.isAfter(latest))) latest = t;
+      if (t == null) return null;
+      if (oldest == null || t.isBefore(oldest)) oldest = t;
     }
-    return latest;
+    return oldest;
   }
 
-  /// Called on app start: only hits the network if prices are old.
+  bool hasStalePrices({Duration maxAge = const Duration(minutes: 15), DateTime? now}) {
+    if (repo.trades.isEmpty) return false;
+    final clock = now ?? DateTime.now();
+    for (final h in repo.holdings) {
+      if (h.assetClass == AssetClass.cash) continue;
+      final date = h.priceUpdatedAt;
+      if (date == null || clock.difference(date) >= maxAge) return true;
+    }
+    // A trade with no corresponding holding also needs an initial quote.
+    for (final t in repo.trades) {
+      if (repo.holdingFor(t.accountId, t.symbol) == null) return true;
+    }
+    return false;
+  }
+
   Future<void> refreshIfStale({Duration maxAge = const Duration(minutes: 15)}) async {
-    if (repo.trades.isEmpty) return;
-    final last = lastUpdated;
-    if (last != null && DateTime.now().difference(last) < maxAge) return;
-    await refreshAll();
+    if (hasStalePrices(maxAge: maxAge)) await refreshAll();
   }
 
   Future<PriceRefreshResult?> refreshAll() async {
@@ -82,7 +97,7 @@ class PriceController extends ChangeNotifier {
     // 1. Work out what to fetch: one target per distinct symbol.
     final targets = <String, _Target>{};
     for (final t in trades) {
-      final key = t.symbol.toUpperCase();
+      final key = t.symbol.trim().toUpperCase();
       final existing = targets[key];
       if (existing != null) {
         if (t.tradeDate.isBefore(existing.since)) {
@@ -92,7 +107,7 @@ class PriceController extends ChangeNotifier {
       }
       HoldingRecord? meta;
       for (final h in repo.holdings) {
-        if (h.symbol.toUpperCase() == key) {
+        if (h.accountId == t.accountId && h.symbol.trim().toUpperCase() == key) {
           meta = h;
           break;
         }
@@ -107,10 +122,30 @@ class PriceController extends ChangeNotifier {
     }
     targets.removeWhere((_, tg) => tg.assetClass == AssetClass.cash); // nothing to price
 
+    // Without an exchange identifier or an account-scoped history key, two
+    // instruments sharing a ticker but differing in currency/type cannot be
+    // safely resolved. Skip the entire ambiguous ticker instead of silently
+    // overwriting a price or its historical series.
+    final ambiguous = <String>{};
+    for (final t in trades) {
+      final key = t.symbol.trim().toUpperCase();
+      final h = repo.holdingFor(t.accountId, t.symbol);
+      final reference = targets[key];
+      if (reference == null) continue;
+      if ((h?.currency ?? t.currency).toUpperCase() != reference.currency.toUpperCase() ||
+          (h?.assetClass ?? AssetClass.stock) != reference.assetClass) {
+        ambiguous.add(key);
+      }
+    }
+    for (final key in ambiguous) {
+      targets.remove(key);
+    }
+
     // 2. Fetch, a few at a time so we stay polite to the sources.
     final results = <String, PriceQuote>{};
     var failed = 0;
-    final failedNames = <String>[];
+    final failedNames = <String>[...ambiguous];
+    failed += ambiguous.length;
     final list = targets.entries.toList();
     for (var i = 0; i < list.length; i += 4) {
       final chunk = list.sublist(i, math.min(i + 4, list.length));
@@ -121,13 +156,14 @@ class PriceController extends ChangeNotifier {
           final q = await (isFund ? funds : stocks).fetch(
             PriceRequest(symbol: tg.symbol, name: tg.name, currency: tg.currency, since: tg.since),
           );
-          if (q == null) {
+          if (q == null || !q.price.isFinite || q.price <= 0 ||
+              q.symbol.toUpperCase() != tg.symbol.toUpperCase()) {
             failed++;
             failedNames.add(tg.symbol);
             return;
           }
           // Never apply a price quoted in a different currency than the holding.
-          if (!isFund && q.currency != null && q.currency!.toUpperCase() != tg.currency.toUpperCase()) {
+          if (!isFund && (q.currency == null || q.currency!.toUpperCase() != tg.currency.toUpperCase())) {
             failed++;
             failedNames.add(tg.symbol);
             return;
@@ -147,9 +183,9 @@ class PriceController extends ChangeNotifier {
     for (final t in trades) {
       final recKey = HoldingRecord.keyOf(t.accountId, t.symbol);
       if (!seen.add(recKey)) continue;
-      final q = results[t.symbol.toUpperCase()];
+      final q = results[t.symbol.trim().toUpperCase()];
       if (q == null) continue;
-      final tg = targets[t.symbol.toUpperCase()]!;
+      final tg = targets[t.symbol.trim().toUpperCase()]!;
       final record = repo.holdingFor(t.accountId, t.symbol) ??
           HoldingRecord(
             id: const Uuid().v4(),
@@ -160,6 +196,7 @@ class PriceController extends ChangeNotifier {
             currency: tg.currency,
             currentPrice: q.price,
           );
+      // Record a successful fetch time; market quote dates may be older on weekends.
       updates.add(record.copyWith(currentPrice: q.price, priceUpdatedAt: now));
     }
     final history = {for (final e in results.entries) e.key: e.value.history};
