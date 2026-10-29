@@ -98,6 +98,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _exportBackup(BuildContext context) async {
+    final t = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final backup = PortfolioBackup(
@@ -111,21 +112,22 @@ class SettingsScreen extends StatelessWidget {
         themeMode: settings.themeMode.name,
       );
       final saved = await FilePicker.platform.saveFile(
-        dialogTitle: 'Save HuatLui backup',
+        dialogTitle: t.backupSaveDialog,
         fileName: 'huatlui_backup_${fmtDate(DateTime.now())}.json',
         type: FileType.custom,
         allowedExtensions: const ['json'],
         bytes: Uint8List.fromList(utf8.encode(backup.encode())),
       );
       if (saved != null) {
-        messenger.showSnackBar(const SnackBar(content: Text('Backup saved. Keep it in a secure location.')));
+        messenger.showSnackBar(SnackBar(content: Text(t.backupSaved)));
       }
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Backup failed: $e')));
+      messenger.showSnackBar(SnackBar(content: Text('${t.backupSaveFailed} $e')));
     }
   }
 
   Future<void> _restoreBackup(BuildContext context) async {
+    final t = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final result = await FilePicker.platform.pickFiles(
@@ -141,21 +143,20 @@ class SettingsScreen extends StatelessWidget {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: const Text('Restore portfolio backup?'),
+          title: Text(t.backupRestoreTitle),
           content: Text(
-            'This will REPLACE your current portfolio data on this device.\n\n'
-            'Accounts: ${backup.accounts.length}\n'
-            'Holdings: ${backup.holdings.length}\n'
-            'Trades: ${backup.trades.length}\n'
-            'Dividends: ${backup.dividends.length}\n\n'
-            'Create and save a backup of your current portfolio first. '
-            'Device lock preferences will not be changed.',
+            '${t.backupReplaceWarning}\n\n'
+            '${t.backupAccounts}: ${backup.accounts.length}\n'
+            '${t.backupHoldings}: ${backup.holdings.length}\n'
+            '${t.backupTrades}: ${backup.trades.length}\n'
+            '${t.backupDividends}: ${backup.dividends.length}\n\n'
+            t.backupRestoreWarning,
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Cancel')),
+              child: Text(t.cancel)),
             FilledButton(onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Replace & restore')),
+              child: Text(t.backupReplace)),
           ],
         ),
       );
@@ -165,10 +166,10 @@ class SettingsScreen extends StatelessWidget {
       await settings.setLocale(Locale(backup.locale));
       await settings.setThemeMode(ThemeMode.values.byName(backup.themeMode));
       if (context.mounted) {
-        messenger.showSnackBar(const SnackBar(content: Text('Portfolio backup restored successfully.')));
+        messenger.showSnackBar(SnackBar(content: Text(t.backupRestored)));
       }
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Restore failed: $e')));
+      messenger.showSnackBar(SnackBar(content: Text('${t.backupRestoreFailed} $e')));
     }
   }
 
@@ -294,40 +295,40 @@ class SettingsScreen extends StatelessWidget {
                 onTap: prices.refreshing ? null : () => _refreshPrices(context),
               ),
 
-              SectionLabel('Exchange rates'),
+              SectionLabel(t.fxSection),
               const HairlineDivider(),
               _SettingRow(
-                title: 'FX data source',
-                value: 'Frankfurter (daily)',
+                title: t.fxSource,
+                value: t.fxDaily,
               ),
               _SettingRow(
-                title: 'FX rates as of',
+                title: t.fxAsOf,
                 value: fx.hasLiveData && fx.asOf != null
-                    ? '${fx.asOf!.year}-${fx.asOf!.month.toString().padLeft(2, '0')}-${fx.asOf!.day.toString().padLeft(2, '0')}${fx.isStale ? ' (cached)' : ''}'
-                    : 'Indicative only',
+                    ? '${fx.asOf!.year}-${fx.asOf!.month.toString().padLeft(2, '0')}-${fx.asOf!.day.toString().padLeft(2, '0')}${fx.isStale ? t.fxCached : ''}'
+                    : t.fxIndicative,
               ),
               _SettingRow(
-                title: 'Refresh exchange rates',
-                value: fx.refreshing ? 'Updating…' : null,
+                title: t.fxRefresh,
+                value: fx.refreshing ? t.fxRefreshing : null,
                 onTap: fx.refreshing ? null : () async {
                   final ok = await fx.refresh(force: true);
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(ok ? 'FX rates updated' : 'FX update failed. Cached rates retained.'),
+                    content: Text(ok ? t.fxUpdated : t.fxRefreshFailed),
                   ));
                 },
               ),
               if (fx.lastError != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 6, bottom: 12),
-                  child: Text('FX: last refresh failed; showing ${fx.hasLiveData ? 'cached' : 'indicative'} values.',
+                  child: Text(fx.hasLiveData ? t.fxFailedCached : t.fxFailedIndicative,
                     style: TextStyle(fontSize: 12, color: c.textSecondary)),
                 ),
 
               SectionLabel(t.settingsData),
               const HairlineDivider(),
-              _SettingRow(title: 'Save full backup (JSON)', onTap: () => _exportBackup(context)),
-              _SettingRow(title: 'Restore full backup (JSON)', onTap: () => _restoreBackup(context)),
+              _SettingRow(title: t.backupSave, onTap: () => _exportBackup(context)),
+              _SettingRow(title: t.backupRestore, onTap: () => _restoreBackup(context)),
               _SettingRow(title: t.importCsv, onTap: () => _importCsv(context)),
               _SettingRow(title: t.exportCsv, onTap: () => _exportCsv(context)),
               _SettingRow(title: t.clearAllData, titleColor: c.loss, onTap: () => _confirmClear(context)),
