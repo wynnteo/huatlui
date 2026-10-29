@@ -34,18 +34,12 @@ List<Position> filterAndSortHoldings({
       (assetClass == null || p.assetClass == assetClass)).toList();
 
   int compare(Position a, Position b) {
-    int value;
-    switch (sort) {
-      case HoldingSort.symbol:
-        value = a.symbol.toUpperCase().compareTo(b.symbol.toUpperCase());
-      case HoldingSort.marketValue:
-        // Use portfolio base currency for cross-currency comparisons.
-        value = a.marketValueBase.compareTo(b.marketValueBase);
-      case HoldingSort.profitLoss:
-        value = a.unrealizedBase.compareTo(b.unrealizedBase);
-      case HoldingSort.profitLossPct:
-        value = a.unrealizedPct.compareTo(b.unrealizedPct);
-    }
+    var value = switch (sort) {
+      HoldingSort.symbol => a.symbol.toUpperCase().compareTo(b.symbol.toUpperCase()),
+      HoldingSort.marketValue => a.marketValueBase.compareTo(b.marketValueBase),
+      HoldingSort.profitLoss => a.unrealizedBase.compareTo(b.unrealizedBase),
+      HoldingSort.profitLossPct => a.unrealizedPct.compareTo(b.unrealizedPct),
+    };
     if (descending) value = -value;
     return value != 0 ? value : (a.accountId.compareTo(b.accountId) != 0
       ? a.accountId.compareTo(b.accountId)
