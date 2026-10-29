@@ -3,6 +3,7 @@ import '../app_scope.dart';
 import '../l10n/app_localizations.dart';
 import '../models/enums.dart';
 import '../services/portfolio_service.dart';
+import '../services/holdings_view.dart';
 import '../services/price_alerts.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
@@ -12,8 +13,18 @@ import 'holding_detail_screen.dart';
 import 'investment_review_editor.dart';
 
 /// Per-item screen, so every amount here is in the holding's OWN currency.
-class HoldingsScreen extends StatelessWidget {
+class HoldingsScreen extends StatefulWidget {
   const HoldingsScreen({super.key});
+
+  @override
+  State<HoldingsScreen> createState() => _HoldingsScreenState();
+}
+
+class _HoldingsScreenState extends State<HoldingsScreen> {
+  String? _selectedAccountId;
+  AssetClass? _selectedAssetClass;
+  HoldingSort _sort = HoldingSort.symbol;
+  bool _descending = false;
 
   /// A holding whose price was never fetched (or is a week old) is flagged,
   /// because its gain/loss is only as good as that price.
@@ -40,6 +51,19 @@ class HoldingsScreen extends StatelessWidget {
               .where((p) => p.isOpen)
               .toList();
 
+          // Keep the alert/review banners independent of the current list filters.
+          // Account and asset selections are temporary UI state only.
+          final accountIds = repo.accounts.map((a) => a.id).toSet();
+          final selectedAccountId = accountIds.contains(_selectedAccountId)
+              ? _selectedAccountId : null;
+          final visible = filterAndSortHoldings(
+            positions: open,
+            accountId: selectedAccountId,
+            assetClass: _selectedAssetClass,
+            sort: _sort,
+            descending: _descending,
+          );
+          final zh = Localizations.localeOf(context).languageCode == 'zh';
           return RefreshIndicator(
             onRefresh: () => prices.refreshAll(),
             child: ListView(
@@ -128,25 +152,113 @@ class HoldingsScreen extends StatelessWidget {
                 );
               }),
 
+              // Filters apply to the holdings list only; alert banners above
+              // always show all affected holdings.
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 9,
+                runSpacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 164,
+                    child: DropdownButtonFormField<String>(
+                      isExpanded: true,
+                      value: selectedAccountId ?? '_all',
+                      decoration: InputDecoration(
+                        labelText: zh ? '券商' : 'Broker',
+                        border: const OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                      items: [
+                        DropdownMenuItem(value: '_all', child: Text(zh ? '所有券商' : 'All brokers')),
+                        for (final a in repo.accounts)
+                          DropdownMenuItem(value: a.id,
+                            child: Text(a.name, overflow: TextOverflow.ellipsis)),
+                      ],
+                      onChanged: (v) => setState(() => _selectedAccountId = v == '_all' ? null : v),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 155,
+                    child: DropdownButtonFormField<AssetClass?>(
+                      isExpanded: true,
+                      value: _selectedAssetClass,
+                      decoration: InputDecoration(
+                        labelText: zh ? '资产类别' : 'Asset type',
+                        border: const OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                      items: [
+                        DropdownMenuItem<AssetClass?>(value: null, child: Text(zh ? '所有类别' : 'All types')),
+                        for (final a in AssetClass.values)
+                          DropdownMenuItem<AssetClass?>(
+                            value: a,
+                            child: Text(assetClassLabel(t, a), overflow: TextOverflow.ellipsis)),
+                      ],
+                      onChanged: (v) => setState(() => _selectedAssetClass = v),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 176,
+                    child: DropdownButtonFormField<HoldingSort>(
+                      isExpanded: true,
+                      value: _sort,
+                      decoration: InputDecoration(
+                        labelText: zh ? '排序' : 'Sort by',
+                        border: const OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                      items: [
+                        DropdownMenuItem(value: HoldingSort.symbol, child: Text(zh ? '代码' : 'Symbol')),
+                        DropdownMenuItem(value: HoldingSort.marketValue, child: Text(zh ? '市值' : 'Market value')),
+                        DropdownMenuItem(value: HoldingSort.profitLoss, child: Text(zh ? '浮动盈亏' : 'Unrealized P/L')),
+                        DropdownMenuItem(value: HoldingSort.profitLossPct, child: Text(zh ? '盈亏百分比' : 'P/L %')),
+                      ],
+                      onChanged: (v) { if (v != null) setState(() => _sort = v); },
+                    ),
+                  ),
+                  IconButton.outlined(
+                    tooltip: _descending ? (zh ? '降序' : 'Descending') : (zh ? '升序' : 'Ascending'),
+                    onPressed: () => setState(() => _descending = !_descending),
+                    icon: Icon(_descending ? Icons.arrow_downward : Icons.arrow_upward),
+                  ),
+                  if (_selectedAccountId != null || _selectedAssetClass != null || _sort != HoldingSort.symbol || _descending)
+                    TextButton(
+                      onPressed: () => setState(() {
+                        _selectedAccountId = null;
+                        _selectedAssetClass = null;
+                        _sort = HoldingSort.symbol;
+                        _descending = false;
+                      }),
+                      child: Text(zh ? '重置' : 'Reset'),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(zh ? '显示 ${visible.length} / ${open.length} 项持仓' :
+                'Showing ${visible.length} of ${open.length} holdings',
+                style: TextStyle(fontSize: 12, color: c.textTertiary)),
+              const SizedBox(height: 6),
               if (open.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Text(t.holdingsTapHint, style: TextStyle(fontSize: 12, color: c.textTertiary)),
                 ),
-              if (open.isEmpty)
+              if (visible.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 40),
-                  child: Center(child: Text(t.holdingsEmpty, style: TextStyle(color: c.textSecondary))),
+                  child: Center(child: Text(open.isEmpty ? t.holdingsEmpty : (zh ? '没有符合筛选条件的持仓' : 'No holdings match these filters'), style: TextStyle(color: c.textSecondary))),
                 ),
               for (final account in repo.accounts) ...[
-                if (open.any((p) => p.accountId == account.id)) ...[
+                if (visible.any((p) => p.accountId == account.id)) ...[
                   Padding(
                     padding: const EdgeInsets.only(top: 12, bottom: 4),
                     child: Text(account.name.toUpperCase(),
                         style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8, color: c.textTertiary)),
                   ),
                   const HairlineDivider(),
-                  for (final p in open.where((p) => p.accountId == account.id)) ...[
+                  for (final p in visible.where((p) => p.accountId == account.id)) ...[
                     _HoldingRow(
                       position: p,
                       priceNote: _priceNote(t, p),
