@@ -1,5 +1,13 @@
 import 'enums.dart';
 
+enum InvestmentReviewStatus {
+  hold,
+  watch,
+  addCandidate,
+  reduceReview,
+  exitReview,
+}
+
 /// The persisted part of a holding: what it is, its latest price, and the
 /// user's target weight. Quantity / average cost are NOT stored here — they
 /// are always derived from the trades (see PortfolioService), so there is no
@@ -14,6 +22,10 @@ class HoldingRecord {
   final double currentPrice; // in [currency]
   final DateTime? priceUpdatedAt;
   final double? targetPct; // target share of the whole portfolio, 0-100
+  final InvestmentReviewStatus reviewStatus;
+  final String? investmentThesis;
+  final String? reviewNotes;
+  final DateTime? nextReviewDate;
 
   const HoldingRecord({
     required this.id,
@@ -25,12 +37,26 @@ class HoldingRecord {
     required this.currentPrice,
     this.priceUpdatedAt,
     this.targetPct,
+    this.reviewStatus = InvestmentReviewStatus.hold,
+    this.investmentThesis,
+    this.reviewNotes,
+    this.nextReviewDate,
   });
 
   String get key => keyOf(accountId, symbol);
   static String keyOf(String accountId, String symbol) => '$accountId|${symbol.toUpperCase()}';
 
-  HoldingRecord copyWith({double? currentPrice, DateTime? priceUpdatedAt, double? targetPct, bool clearTarget = false}) {
+  HoldingRecord copyWith({
+    double? currentPrice,
+    DateTime? priceUpdatedAt,
+    double? targetPct,
+    bool clearTarget = false,
+    InvestmentReviewStatus? reviewStatus,
+    String? investmentThesis,
+    String? reviewNotes,
+    DateTime? nextReviewDate,
+    bool clearReviewDate = false,
+  }) {
     return HoldingRecord(
       id: id,
       accountId: accountId,
@@ -41,6 +67,10 @@ class HoldingRecord {
       currentPrice: currentPrice ?? this.currentPrice,
       priceUpdatedAt: priceUpdatedAt ?? this.priceUpdatedAt,
       targetPct: clearTarget ? null : (targetPct ?? this.targetPct),
+      reviewStatus: reviewStatus ?? this.reviewStatus,
+      investmentThesis: investmentThesis ?? this.investmentThesis,
+      reviewNotes: reviewNotes ?? this.reviewNotes,
+      nextReviewDate: clearReviewDate ? null : (nextReviewDate ?? this.nextReviewDate),
     );
   }
 
@@ -54,6 +84,10 @@ class HoldingRecord {
         'currentPrice': currentPrice,
         'priceUpdatedAt': priceUpdatedAt?.toIso8601String(),
         'targetPct': targetPct,
+        'reviewStatus': reviewStatus.name,
+        'investmentThesis': investmentThesis,
+        'reviewNotes': reviewNotes,
+        'nextReviewDate': nextReviewDate?.toIso8601String(),
       };
 
   factory HoldingRecord.fromJson(Map<String, dynamic> j) => HoldingRecord(
@@ -66,5 +100,9 @@ class HoldingRecord {
         currentPrice: (j['currentPrice'] as num).toDouble(),
         priceUpdatedAt: j['priceUpdatedAt'] == null ? null : DateTime.parse(j['priceUpdatedAt'] as String),
         targetPct: (j['targetPct'] as num?)?.toDouble(),
+        reviewStatus: enumByName(InvestmentReviewStatus.values, j['reviewStatus'], InvestmentReviewStatus.hold),
+        investmentThesis: j['investmentThesis'] as String?,
+        reviewNotes: j['reviewNotes'] as String?,
+        nextReviewDate: j['nextReviewDate'] == null ? null : DateTime.parse(j['nextReviewDate'] as String),
       );
 }
