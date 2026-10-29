@@ -128,7 +128,10 @@ class PortfolioBackup {
       if (!accountIds.contains(h.accountId) ||
           h.symbol.trim().isEmpty || h.currency.trim().isEmpty ||
           !h.currentPrice.isFinite || h.currentPrice < 0 ||
-          (h.targetPct != null && (!h.targetPct!.isFinite || h.targetPct! < 0 || h.targetPct! > 100))) {
+          (h.targetPct != null && (!h.targetPct!.isFinite || h.targetPct! < 0 || h.targetPct! > 100)) ||
+          (h.alertBelow != null && (!h.alertBelow!.isFinite || h.alertBelow! <= 0)) ||
+          (h.alertAbove != null && (!h.alertAbove!.isFinite || h.alertAbove! <= 0)) ||
+          (h.alertBelow != null && h.alertAbove != null && h.alertBelow! >= h.alertAbove!)) {
         throw const FormatException('Invalid holding in backup');
       }
     }
