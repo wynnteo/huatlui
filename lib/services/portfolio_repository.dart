@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/account.dart';
@@ -10,6 +9,7 @@ import 'csv_import.dart';
 import 'activity.dart';
 import 'demo_data.dart';
 import 'portfolio_backup.dart';
+import 'portfolio_write_queue.dart';
 
 /// Local storage for the POC. Everything is saved as plain JSON maps in
 /// Hive boxes (no type adapters, so no build_runner step), and kept in
@@ -24,20 +24,7 @@ class PortfolioRepository extends ChangeNotifier {
   late final Box<dynamic> _dividendsBox;
   late final Box<dynamic> _priceBox;
   late final Box<dynamic> _restoreJournal;
-  Future<void> _writeQueue = Future<void>.value();
-
-  /// Serializes restore, imports, price updates and other local mutations.
-  Future<T> _write<T>(Future<T> Function() operation) async {
-    final previous = _writeQueue;
-    final done = Completer<void>();
-    _writeQueue = done.future;
-    await previous;
-    try {
-      return await operation();
-    } finally {
-      done.complete();
-    }
-  }
+  final PortfolioWriteQueue _writes = PortfolioWriteQueue();
 
   List<Box<dynamic>> get _dataBoxes => [
     _accountsBox, _holdingsBox, _tradesBox, _dividendsBox, _priceBox,
@@ -49,7 +36,7 @@ class PortfolioRepository extends ChangeNotifier {
     final entry = _restoreJournal.get('pending');
     if (entry == null) return;
     if (entry is! Map) throw StateError('Invalid restore recovery journal');
-    if (entry['state'] == 'committed') {
+    if (!shouldRollbackRestoreJournal(entry['state']) && entry['state'] == 'committed') {
       await _restoreJournal.delete('pending');
       return;
     }
@@ -118,7 +105,7 @@ class PortfolioRepository extends ChangeNotifier {
   /// Saves a whole price refresh in one go: new prices on the holdings, and
   /// the day-by-day history merged into what is already stored (newer wins).
   Future<void> applyPriceRefresh(List<HoldingRecord> updatedHoldings, Map<String, List<PricePoint>> history) async {
-    return _write(() async {
+    return _writes.run(() async {
     for (final h in updatedHoldings) {
       await _holdingsBox.put(h.id, h.toJson());
     }
@@ -156,7 +143,7 @@ class PortfolioRepository extends ChangeNotifier {
 
   /// Writes everything from a CSV import in one go (one reload, one notify).
   Future<void> applyImport(ImportPlan plan) async {
-    return _write(() async {
+    return _writes.run(() async {
     // Validate the complete post-import history before making any writes.
     if (!tradesAreConsistent([...trades, ...plan.trades])) {
       throw StateError('Import would create a sale exceeding available shares');
@@ -179,7 +166,7 @@ class PortfolioRepository extends ChangeNotifier {
   }
 
   Future<void> putAccount(Account a) async {
-    return _write(() async {
+    return _writes.run(() async {
     await _accountsBox.put(a.id, a.toJson());
     await _changed();
   
@@ -187,7 +174,7 @@ class PortfolioRepository extends ChangeNotifier {
   }
 
   Future<void> putHolding(HoldingRecord h) async {
-    return _write(() async {
+    return _writes.run(() async {
     await _holdingsBox.put(h.id, h.toJson());
     await _changed();
   
@@ -195,7 +182,7 @@ class PortfolioRepository extends ChangeNotifier {
   }
 
   Future<void> putTrade(Trade t) async {
-    return _write(() async {
+    return _writes.run(() async {
     await _tradesBox.put(t.id, t.toJson());
     await _changed();
   
@@ -203,7 +190,7 @@ class PortfolioRepository extends ChangeNotifier {
   }
 
   Future<void> putDividend(Dividend d) async {
-    return _write(() async {
+    return _writes.run(() async {
     await _dividendsBox.put(d.id, d.toJson());
     await _changed();
   
@@ -211,7 +198,7 @@ class PortfolioRepository extends ChangeNotifier {
   }
 
   Future<void> deleteTrade(String id) async {
-    return _write(() async {
+    return _writes.run(() async {
     await _tradesBox.delete(id);
     await _changed();
   
@@ -219,7 +206,7 @@ class PortfolioRepository extends ChangeNotifier {
   }
 
   Future<void> deleteDividend(String id) async {
-    return _write(() async {
+    return _writes.run(() async {
     await _dividendsBox.delete(id);
     await _changed();
   
@@ -227,7 +214,7 @@ class PortfolioRepository extends ChangeNotifier {
   }
 
   Future<void> loadDemo() async {
-    return _write(() async {
+    return _writes.run(() async {
     final demo = DemoData.build();
     for (final a in demo.accounts) {
       await _accountsBox.put(a.id, a.toJson());
@@ -250,7 +237,7 @@ class PortfolioRepository extends ChangeNotifier {
   /// A prepared journal is recovered on the next launch before loading data.
   Future<void> restoreBackup(PortfolioBackup backup) async {
     backup.validate();
-    return _write(() async {
+    return _writes.run(() async {
       // Resolve a previously interrupted operation before starting another.
       await _recoverInterruptedRestore();
       final boxes = _dataBoxes;
@@ -295,7 +282,7 @@ class PortfolioRepository extends ChangeNotifier {
   }
 
   Future<void> clearAll() async {
-    return _write(() async {
+    return _writes.run(() async {
     await _accountsBox.clear();
     await _holdingsBox.clear();
     await _tradesBox.clear();
