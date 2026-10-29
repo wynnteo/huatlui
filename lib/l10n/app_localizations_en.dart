@@ -680,4 +680,97 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get detailEmpty => 'No transactions for this holding.';
+
+  @override
+  String get fxSection => 'Exchange rates';
+
+  @override
+  String get fxSource => 'FX data source';
+
+  @override
+  String get fxDaily => 'Frankfurter (daily)';
+
+  @override
+  String get fxAsOf => 'FX rates as of';
+
+  @override
+  String get fxCached => ' (cached)';
+
+  @override
+  String get fxIndicative => 'Indicative only';
+
+  @override
+  String get fxRefresh => 'Refresh exchange rates';
+
+  @override
+  String get fxRefreshing => 'Updating…';
+
+  @override
+  String get fxUpdated => 'FX rates updated';
+
+  @override
+  String get fxRefreshFailed => 'FX update failed. Cached rates retained.';
+
+  @override
+  String get fxFailedCached => 'FX: last refresh failed; showing cached values.';
+
+  @override
+  String get fxFailedIndicative => 'FX: last refresh failed; showing indicative values.';
+
+  @override
+  String get fxDashboardIndicative => 'FX: indicative offline rates (not current market data)';
+
+  @override
+  String get fxDashboardCached => 'FX: cached rates as of';
+
+  @override
+  String get fxDashboardReference => 'FX: daily reference rates as of';
+
+  @override
+  String get pricesSomeStale => 'Some prices need updating';
+
+  @override
+  String get backupSave => 'Save full backup (JSON)';
+
+  @override
+  String get backupRestore => 'Restore full backup (JSON)';
+
+  @override
+  String get backupSaveDialog => 'Save HuatLui backup';
+
+  @override
+  String get backupSaved => 'Backup saved. Keep it in a secure location.';
+
+  @override
+  String get backupSaveFailed => 'Backup failed:';
+
+  @override
+  String get backupRestoreTitle => 'Restore portfolio backup?';
+
+  @override
+  String get backupReplaceWarning => 'This will REPLACE your current portfolio data on this device.';
+
+  @override
+  String get backupAccounts => 'Accounts';
+
+  @override
+  String get backupHoldings => 'Holdings';
+
+  @override
+  String get backupTrades => 'Trades';
+
+  @override
+  String get backupDividends => 'Dividends';
+
+  @override
+  String get backupRestoreWarning => 'Create and save a backup of your current portfolio first. Device lock preferences will not be changed.';
+
+  @override
+  String get backupReplace => 'Replace & restore';
+
+  @override
+  String get backupRestored => 'Portfolio backup restored successfully.';
+
+  @override
+  String get backupRestoreFailed => 'Restore failed:';
 }
