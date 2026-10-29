@@ -24,6 +24,7 @@ class PriceStatus extends StatelessWidget {
         } else {
           text = t.pricesUpdated(DateFormat('yyyy-MM-dd HH:mm').format(last));
         }
+        final stale = prices.hasStalePrices();
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -31,7 +32,9 @@ class PriceStatus extends StatelessWidget {
               SizedBox(width: 10, height: 10, child: CircularProgressIndicator(strokeWidth: 1.5, color: c.textTertiary)),
               const SizedBox(width: 6),
             ],
-            Flexible(child: Text(text, style: TextStyle(fontSize: 11, color: c.textTertiary))),
+            Flexible(child: Text(stale && !prices.refreshing
+              ? '$text · Some prices need updating'
+              : text, style: TextStyle(fontSize: 11, color: c.textTertiary))),
           ],
         );
       },
