@@ -149,11 +149,13 @@ class PortfolioService {
           costBase += cashBase;
           boughtBase += cashBase;
         } else {
-          if (t.quantity > qty + 1e-9) {
+          if (exceedsAvailableShares(t.quantity, qty)) {
             throw StateError('Sell exceeds available shares for ${t.symbol} in account ${t.accountId}');
           }
+          // A tiny fractional excess from broker CSV rounding closes the
+          // remaining position without creating negative units or cost.
           final sellQty = t.quantity;
-          final share = sellQty / qty;
+          final share = qty > 0 ? (sellQty >= qty ? 1.0 : sellQty / qty) : 0.0;
           final costOutLocal = costLocal * share; // weighted-average cost
           final costOutBase = costBase * share;
           final feeShare = t.quantity > 0 ? t.fees * (sellQty / t.quantity) : 0.0;
@@ -161,7 +163,7 @@ class PortfolioService {
           final proceedsBase = _hist(proceedsLocal, t.fxRate, t.fxBase);
           realizedBase += proceedsBase - costOutBase;
           realizedLocal += proceedsLocal - costOutLocal;
-          qty -= sellQty;
+          qty = sellQty >= qty ? 0.0 : qty - sellQty;
           costLocal -= costOutLocal;
           costBase -= costOutBase;
         }
