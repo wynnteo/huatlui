@@ -33,7 +33,7 @@ class PriceStatus extends StatelessWidget {
               const SizedBox(width: 6),
             ],
             Flexible(child: Text(stale && !prices.refreshing
-              ? '$text · Some prices need updating'
+              ? '$text · ${t.pricesSomeStale}'
               : text, style: TextStyle(fontSize: 11, color: c.textTertiary))),
           ],
         );

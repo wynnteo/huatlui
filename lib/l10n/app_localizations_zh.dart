@@ -680,4 +680,97 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get detailEmpty => '此持仓暂无交易记录。';
+
+  @override
+  String get fxSection => '汇率';
+
+  @override
+  String get fxSource => '汇率数据来源';
+
+  @override
+  String get fxDaily => 'Frankfurter（每日）';
+
+  @override
+  String get fxAsOf => '汇率数据日期';
+
+  @override
+  String get fxCached => '（缓存）';
+
+  @override
+  String get fxIndicative => '仅供参考';
+
+  @override
+  String get fxRefresh => '刷新汇率';
+
+  @override
+  String get fxRefreshing => '更新中…';
+
+  @override
+  String get fxUpdated => '汇率已更新';
+
+  @override
+  String get fxRefreshFailed => '汇率更新失败，已保留缓存数据。';
+
+  @override
+  String get fxFailedCached => '汇率刷新失败，当前显示缓存汇率。';
+
+  @override
+  String get fxFailedIndicative => '汇率刷新失败，当前显示参考汇率。';
+
+  @override
+  String get fxDashboardIndicative => '汇率：离线参考值（并非实时市场数据）';
+
+  @override
+  String get fxDashboardCached => '汇率：缓存数据，日期';
+
+  @override
+  String get fxDashboardReference => '汇率：每日参考汇率，日期';
+
+  @override
+  String get pricesSomeStale => '部分价格需要更新';
+
+  @override
+  String get backupSave => '保存完整备份（JSON）';
+
+  @override
+  String get backupRestore => '恢复完整备份（JSON）';
+
+  @override
+  String get backupSaveDialog => '保存 HuatLui 备份';
+
+  @override
+  String get backupSaved => '备份已保存，请妥善保管。';
+
+  @override
+  String get backupSaveFailed => '备份失败：';
+
+  @override
+  String get backupRestoreTitle => '恢复投资组合备份？';
+
+  @override
+  String get backupReplaceWarning => '这将覆盖本设备现有的投资组合数据。';
+
+  @override
+  String get backupAccounts => '账户';
+
+  @override
+  String get backupHoldings => '持仓';
+
+  @override
+  String get backupTrades => '交易';
+
+  @override
+  String get backupDividends => '股息';
+
+  @override
+  String get backupRestoreWarning => '建议先备份当前数据。设备锁定设置不会更改。';
+
+  @override
+  String get backupReplace => '覆盖并恢复';
+
+  @override
+  String get backupRestored => '投资组合备份已恢复。';
+
+  @override
+  String get backupRestoreFailed => '恢复失败：';
 }

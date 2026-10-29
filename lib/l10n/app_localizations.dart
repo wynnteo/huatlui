@@ -1312,6 +1312,68 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No transactions for this holding.'**
   String get detailEmpty;
+
+  String get fxSection;
+
+  String get fxSource;
+
+  String get fxDaily;
+
+  String get fxAsOf;
+
+  String get fxCached;
+
+  String get fxIndicative;
+
+  String get fxRefresh;
+
+  String get fxRefreshing;
+
+  String get fxUpdated;
+
+  String get fxRefreshFailed;
+
+  String get fxFailedCached;
+
+  String get fxFailedIndicative;
+
+  String get fxDashboardIndicative;
+
+  String get fxDashboardCached;
+
+  String get fxDashboardReference;
+
+  String get pricesSomeStale;
+
+  String get backupSave;
+
+  String get backupRestore;
+
+  String get backupSaveDialog;
+
+  String get backupSaved;
+
+  String get backupSaveFailed;
+
+  String get backupRestoreTitle;
+
+  String get backupReplaceWarning;
+
+  String get backupAccounts;
+
+  String get backupHoldings;
+
+  String get backupTrades;
+
+  String get backupDividends;
+
+  String get backupRestoreWarning;
+
+  String get backupReplace;
+
+  String get backupRestored;
+
+  String get backupRestoreFailed;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
