@@ -196,7 +196,8 @@ class PriceController extends ChangeNotifier {
             currency: tg.currency,
             currentPrice: q.price,
           );
-      updates.add(record.copyWith(currentPrice: q.price, priceUpdatedAt: q.asOf ?? now));
+      // Record a successful fetch time; market quote dates may be older on weekends.
+      updates.add(record.copyWith(currentPrice: q.price, priceUpdatedAt: now));
     }
     final history = {for (final e in results.entries) e.key: e.value.history};
     await repo.applyPriceRefresh(updates, history);
