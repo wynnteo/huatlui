@@ -26,7 +26,7 @@ if (buildingRelease) {
             "HUATLUI_KEY_PASSWORD and HUATLUI_STORE_PASSWORD."
     }
     require(releaseAdMobId != null &&
-        Regex("""ca-app-pub-\\d{16}~\\d{10}""").matches(releaseAdMobId)) {
+        Regex("""ca-app-pub-\d{16}~\d{10}""").matches(releaseAdMobId)) {
         "Set HUATLUI_ADMOB_APP_ID to HuatLui's own AdMob app ID before building release."
     }
 }
