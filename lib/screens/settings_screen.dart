@@ -150,7 +150,7 @@ class SettingsScreen extends StatelessWidget {
             '${t.backupHoldings}: ${backup.holdings.length}\n'
             '${t.backupTrades}: ${backup.trades.length}\n'
             '${t.backupDividends}: ${backup.dividends.length}\n\n'
-            t.backupRestoreWarning,
+            '${t.backupRestoreWarning}',
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(dialogContext, false),
