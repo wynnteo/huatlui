@@ -91,6 +91,7 @@ class PriceController extends ChangeNotifier {
   }
 
   Future<PriceRefreshResult> _refresh() async {
+    final generation = repo.dataGeneration;
     final trades = repo.trades;
     if (trades.isEmpty) return const PriceRefreshResult();
 
@@ -200,7 +201,7 @@ class PriceController extends ChangeNotifier {
       updates.add(record.copyWith(currentPrice: q.price, priceUpdatedAt: now));
     }
     final history = {for (final e in results.entries) e.key: e.value.history};
-    await repo.applyPriceRefresh(updates, history);
+    await repo.applyPriceRefresh(updates, history, expectedGeneration: generation);
 
     return PriceRefreshResult(updated: results.length, failed: failed, failedSymbols: failedNames);
   }
