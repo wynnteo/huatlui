@@ -8,6 +8,7 @@ import '../theme/app_theme.dart';
 import '../widgets/currency_display.dart';
 import '../widgets/ui_helpers.dart';
 import 'holding_detail_screen.dart';
+import 'investment_review_editor.dart';
 
 /// Per-item screen, so every amount here is in the holding's OWN currency.
 class HoldingsScreen extends StatelessWidget {
@@ -45,6 +46,46 @@ class HoldingsScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 96),
             children: [
               ScreenTitle(t.navHoldings),
+              Builder(builder: (context) {
+                final due = [
+                  for (final record in repo.holdings)
+                    if (reviewDue(record, DateTime.now()) &&
+                        open.any((p) => p.accountId == record.accountId &&
+                            p.symbol.toUpperCase() == record.symbol.toUpperCase()))
+                      record,
+                ];
+                if (due.isEmpty) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8, bottom: 14),
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(Localizations.localeOf(context).languageCode == 'zh'
+                            ? '待复核持仓（${due.length}）'
+                            : 'Holdings due for review (${due.length})',
+                            style: const TextStyle(fontWeight: FontWeight.w600)),
+                          for (final record in due.take(5))
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              dense: true,
+                              title: Text(record.symbol),
+                              subtitle: Text(reviewStatusLabel(record.reviewStatus,
+                                Localizations.localeOf(context).languageCode == 'zh')),
+                              trailing: const Icon(Icons.chevron_right),
+                              onTap: () => Navigator.push(context,
+                                MaterialPageRoute(builder: (_) =>
+                                  InvestmentReviewEditor(holding: record))),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }),
+
               if (open.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 4),
