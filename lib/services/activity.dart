@@ -84,27 +84,37 @@ int compareTradesForAccounting(Trade a, Trade b) {
   return created != 0 ? created : a.id.compareTo(b.id);
 }
 
-/// True if, for every holding, no sale is ever larger than the units held on
-/// that day (replaying the trades in date order).
-bool tradesAreConsistent(List<Trade> trades) {
+/// First transaction that makes a holding's running quantity negative.
+/// The original trade is retained for user review; no data is modified.
+class OversellIssue {
+  final Trade trade;
+  final double available;
+  const OversellIssue(this.trade, this.available);
+}
+
+OversellIssue? firstOversellIssue(List<Trade> trades) {
   final byKey = <String, List<Trade>>{};
   for (final t in trades) {
     byKey.putIfAbsent(HoldingRecord.keyOf(t.accountId, t.symbol), () => []).add(t);
   }
   for (final list in byKey.values) {
     list.sort(compareTradesForAccounting);
-    var qty = 0.0;
+    var available = 0.0;
     for (final t in list) {
       if (t.type == TradeType.buy) {
-        qty += t.quantity;
+        available += t.quantity;
       } else {
-        if (t.quantity > qty + 1e-9) return false;
-        qty -= t.quantity;
+        if (t.quantity > available + 1e-9) return OversellIssue(t, available);
+        available -= t.quantity;
       }
     }
   }
-  return true;
+  return null;
 }
+
+/// True if, for every holding, no sale is ever larger than the units held on
+/// that day (replaying the trades in date order).
+bool tradesAreConsistent(List<Trade> trades) => firstOversellIssue(trades) == null;
 
 /// An edit or delete is refused only if it makes things WORSE. Data that was
 /// already off (say, an import that sold more than it bought) never blocks
