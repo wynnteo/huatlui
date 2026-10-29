@@ -143,11 +143,11 @@ class SettingsScreen extends StatelessWidget {
         builder: (dialogContext) => AlertDialog(
           title: const Text('Restore portfolio backup?'),
           content: Text(
-            'This will REPLACE your current portfolio data on this device.\\n\\n'
-            'Accounts: ${backup.accounts.length}\\n'
-            'Holdings: ${backup.holdings.length}\\n'
-            'Trades: ${backup.trades.length}\\n'
-            'Dividends: ${backup.dividends.length}\\n\\n'
+            'This will REPLACE your current portfolio data on this device.\n\n'
+            'Accounts: ${backup.accounts.length}\n'
+            'Holdings: ${backup.holdings.length}\n'
+            'Trades: ${backup.trades.length}\n'
+            'Dividends: ${backup.dividends.length}\n\n'
             'Create and save a backup of your current portfolio first. '
             'Device lock preferences will not be changed.',
           ),
