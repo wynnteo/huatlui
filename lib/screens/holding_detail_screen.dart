@@ -7,6 +7,7 @@ import '../models/holding_record.dart';
 import '../services/activity.dart';
 import '../services/parse_utils.dart';
 import '../services/portfolio_service.dart';
+import '../services/price_alerts.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../widgets/activity_actions.dart';
@@ -50,6 +51,63 @@ class HoldingDetailScreen extends StatelessWidget {
     if (ok != true || record == null) return;
     final target = parseNumber(ctrl.text);
     await repo.putHolding(record.copyWith(targetPct: target, clearTarget: target == null));
+  }
+
+  Future<void> _editPriceAlerts(BuildContext context, HoldingRecord record) async {
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
+    final below = TextEditingController(text: record.alertBelow?.toString() ?? '');
+    final above = TextEditingController(text: record.alertAbove?.toString() ?? '');
+    try {
+      final accepted = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(zh ? '目标价提醒' : 'Target price alerts'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(zh ? '价格以 ${record.currency} 计算。留空代表不提醒。' :
+                'Thresholds are in ${record.currency}. Leave blank to disable.'),
+              const SizedBox(height: 12),
+              TextField(controller: below,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(labelText: zh ? '低于或等于' : 'At or below')),
+              TextField(controller: above,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(labelText: zh ? '高于或等于' : 'At or above')),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false),
+              child: Text(zh ? '取消' : 'Cancel')),
+            FilledButton(onPressed: () => Navigator.pop(ctx, true),
+              child: Text(zh ? '保存' : 'Save')),
+          ],
+        ),
+      );
+      if (accepted != true) return;
+      double? parse(TextEditingController ctrl) =>
+          ctrl.text.trim().isEmpty ? null : double.tryParse(ctrl.text.trim().replaceAll(',', ''));
+      final lower = parse(below);
+      final upper = parse(above);
+      if ((!below.text.trim().isEmpty && lower == null) ||
+          (!above.text.trim().isEmpty && upper == null) ||
+          !validPriceThreshold(lower) || !validPriceThreshold(upper) ||
+          (lower != null && upper != null && lower >= upper)) {
+        if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(zh ? '请输入有效价格；下限须低于上限。' :
+            'Enter valid prices; lower threshold must be below upper.')));
+        return;
+      }
+      // Re-read fresh record to avoid overwriting concurrently refreshed quotes.
+      final current = repo.holdingFor(record.accountId, record.symbol);
+      if (current != null) await repo.putHolding(current.copyWith(
+        alertBelow: lower, alertAbove: upper,
+        clearAlertBelow: lower == null, clearAlertAbove: upper == null,
+      ));
+    } finally {
+      below.dispose();
+      above.dispose();
+    }
   }
 
   @override
@@ -219,6 +277,32 @@ class HoldingDetailScreen extends StatelessWidget {
                   if ((record.reviewNotes ?? '').isNotEmpty)
                     Text(record.reviewNotes!, style: TextStyle(color: c.textTertiary)),
                 ],
+                if (record != null) ...[
+                  SectionLabel(Localizations.localeOf(context).languageCode == 'zh'
+                    ? '目标价提醒' : 'Target price alerts'),
+                  const HairlineDivider(),
+                  _Row(
+                    label: Localizations.localeOf(context).languageCode == 'zh'
+                      ? '提醒条件' : 'Alert conditions',
+                    value: [
+                      if (record.alertBelow != null)
+                        '≤ ${CurrencyText.formatPrice(record.alertBelow!, record.currency)}',
+                      if (record.alertAbove != null)
+                        '≥ ${CurrencyText.formatPrice(record.alertAbove!, record.currency)}',
+                    ].join(' · ').isEmpty ? '—' : [
+                      if (record.alertBelow != null)
+                        '≤ ${CurrencyText.formatPrice(record.alertBelow!, record.currency)}',
+                      if (record.alertAbove != null)
+                        '≥ ${CurrencyText.formatPrice(record.alertAbove!, record.currency)}',
+                    ].join(' · '),
+                    onTap: () => _editPriceAlerts(context, record),
+                    note: holdingPriceAlertTriggered(record)
+                        ? (Localizations.localeOf(context).languageCode == 'zh'
+                            ? '价格已达到目标；请检查报价日期' : 'Threshold met; verify quote freshness')
+                        : null,
+                  ),
+                ],
+
                 SectionLabel('${t.detailTransactions} · ${activities.length}'),
                 if (activities.isEmpty) Text(t.detailEmpty, style: TextStyle(color: c.textSecondary)),
                 for (var i = 0; i < activities.length; i++) ...[
