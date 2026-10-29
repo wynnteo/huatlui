@@ -84,6 +84,17 @@ int compareTradesForAccounting(Trade a, Trade b) {
   return created != 0 ? created : a.id.compareTo(b.id);
 }
 
+/// Tolerate only tiny broker/CSV floating-point share residues.
+/// At 5,000 shares this allows 0.00005, but never a material oversell.
+double shareQuantityTolerance(double available, double requested) {
+  final scale = available > requested ? available : requested;
+  final relative = scale * 1e-8;
+  return relative > 1e-7 ? relative : 1e-7;
+}
+
+bool exceedsAvailableShares(double requested, double available) =>
+    requested > available + shareQuantityTolerance(available, requested);
+
 /// First transaction that makes a holding's running quantity negative.
 /// The original trade is retained for user review; no data is modified.
 class OversellIssue {
@@ -104,8 +115,8 @@ OversellIssue? firstOversellIssue(List<Trade> trades) {
       if (t.type == TradeType.buy) {
         available += t.quantity;
       } else {
-        if (t.quantity > available + 1e-9) return OversellIssue(t, available);
-        available -= t.quantity;
+        if (exceedsAvailableShares(t.quantity, available)) return OversellIssue(t, available);
+        available = t.quantity >= available ? 0.0 : available - t.quantity;
       }
     }
   }
