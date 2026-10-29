@@ -101,6 +101,15 @@ class DashboardScreen extends StatelessWidget {
               BaseCurrencyNote(t.shownInBaseCurrency(base)),
               const SizedBox(height: 2),
               const PriceStatus(),
+              const SizedBox(height: 4),
+              Text(
+                !fx.hasLiveData
+                    ? 'FX: indicative offline rates (not current market data)'
+                    : 'FX: ${fx.isStale ? 'cached' : 'daily reference'} rates as of '
+                        '${fx.asOf?.year}-${fx.asOf?.month.toString().padLeft(2, '0')}-'
+                        '${fx.asOf?.day.toString().padLeft(2, '0')}',
+                style: TextStyle(fontSize: 11, color: c.textTertiary),
+              ),
 
               const SizedBox(height: 28),
               const HairlineDivider(),
