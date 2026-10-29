@@ -17,6 +17,7 @@ import '../widgets/ui_helpers.dart';
 import 'entry_form_screen.dart';
 import 'investment_review_editor.dart';
 import 'what_if_buy_screen.dart';
+import 'what_if_sell_screen.dart';
 
 /// One holding in full: the facts about it at the top, then every buy, sell
 /// and dividend that makes it up. Amounts are in the holding's own currency
@@ -233,6 +234,22 @@ class HoldingDetailScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                ],
+
+                if (isOpen) ...[
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.sell_outlined),
+                    label: Text(Localizations.localeOf(context).languageCode == 'zh'
+                      ? '模拟卖出盈亏' : 'What-if sell / P&L'),
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => WhatIfSellScreen(
+                        accountId: accountId,
+                        symbol: symbol,
+                      )),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                 ],
 
                 SectionLabel(t.holdingDetails),
