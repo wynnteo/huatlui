@@ -3,6 +3,7 @@ import '../app_scope.dart';
 import '../l10n/app_localizations.dart';
 import '../models/enums.dart';
 import '../services/portfolio_service.dart';
+import '../services/price_alerts.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../widgets/currency_display.dart';
@@ -46,6 +47,47 @@ class HoldingsScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 96),
             children: [
               ScreenTitle(t.navHoldings),
+              Builder(builder: (context) {
+                final triggered = [
+                  for (final record in repo.holdings)
+                    if (holdingPriceAlertTriggered(record) &&
+                        open.any((p) => p.accountId == record.accountId &&
+                          p.symbol.toUpperCase() == record.symbol.toUpperCase()))
+                      record,
+                ];
+                if (triggered.isEmpty) return const SizedBox.shrink();
+                final zh = Localizations.localeOf(context).languageCode == 'zh';
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(zh ? '目标价格已达到（${triggered.length}）' :
+                          'Price targets met (${triggered.length})',
+                          style: const TextStyle(fontWeight: FontWeight.w600)),
+                        for (final record in triggered)
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
+                            title: Text(record.symbol),
+                            subtitle: Text(
+                              '${record.currency} ${record.currentPrice.toStringAsFixed(4)} · ' +
+                              (record.priceUpdatedAt == null
+                                ? (zh ? '报价未更新' : 'Quote not updated')
+                                : (zh ? '检查报价日期' : 'Verify quote date'))),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => Navigator.push(context,
+                              MaterialPageRoute(builder: (_) =>
+                                HoldingDetailScreen(accountId: record.accountId,
+                                  symbol: record.symbol))),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+
               Builder(builder: (context) {
                 final due = [
                   for (final record in repo.holdings)
