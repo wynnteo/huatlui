@@ -25,6 +25,8 @@ class PortfolioRepository extends ChangeNotifier {
   late final Box<dynamic> _priceBox;
   late final Box<dynamic> _restoreJournal;
   final PortfolioWriteQueue _writes = PortfolioWriteQueue();
+  int _dataGeneration = 0;
+  int get dataGeneration => _dataGeneration;
 
   List<Box<dynamic>> get _dataBoxes => [
     _accountsBox, _holdingsBox, _tradesBox, _dividendsBox, _priceBox,
@@ -104,8 +106,9 @@ class PortfolioRepository extends ChangeNotifier {
 
   /// Saves a whole price refresh in one go: new prices on the holdings, and
   /// the day-by-day history merged into what is already stored (newer wins).
-  Future<void> applyPriceRefresh(List<HoldingRecord> updatedHoldings, Map<String, List<PricePoint>> history) async {
+  Future<void> applyPriceRefresh(List<HoldingRecord> updatedHoldings, Map<String, List<PricePoint>> history, {int? expectedGeneration}) async {
     return _writes.run(() async {
+      if (expectedGeneration != null && expectedGeneration != _dataGeneration) return;
     for (final h in updatedHoldings) {
       await _holdingsBox.put(h.id, h.toJson());
     }
@@ -266,6 +269,7 @@ class PortfolioRepository extends ChangeNotifier {
         }
         // Mark the replacement committed before deleting its undo record.
         await _restoreJournal.put('pending', {'state': 'committed'});
+        _dataGeneration++;
         _reloadPrices();
         await _changed();
       } catch (_) {
@@ -288,6 +292,7 @@ class PortfolioRepository extends ChangeNotifier {
     await _tradesBox.clear();
     await _dividendsBox.clear();
     await _priceBox.clear();
+    _dataGeneration++;
     _reloadPrices();
     await _changed();
   
