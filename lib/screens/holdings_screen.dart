@@ -30,7 +30,7 @@ class HoldingsScreen extends StatelessWidget {
 
     return SafeArea(
       child: ListenableBuilder(
-        listenable: Listenable.merge([repo, settings]),
+        listenable: Listenable.merge([repo, settings, fx]),
         builder: (context, _) {
           final svc = PortfolioService(fx: fx, baseCurrency: settings.baseCurrency);
           final open = svc
