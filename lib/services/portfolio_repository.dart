@@ -8,6 +8,7 @@ import '../models/trade.dart';
 import 'csv_import.dart';
 import 'activity.dart';
 import 'demo_data.dart';
+import 'portfolio_backup.dart';
 
 /// Local storage for the POC. Everything is saved as plain JSON maps in
 /// Hive boxes (no type adapters, so no build_runner step), and kept in
@@ -168,6 +169,49 @@ class PortfolioRepository extends ChangeNotifier {
     for (final d in demo.dividends) {
       await _dividendsBox.put(d.id, d.toJson());
     }
+    await _changed();
+  }
+
+  /// Replace device data with a fully validated backup. Keep the previous
+  /// boxes in memory for a best-effort rollback if a disk write fails.
+  Future<void> restoreBackup(PortfolioBackup backup) async {
+    backup.validate();
+    final boxes = <Box<dynamic>>[
+      _accountsBox, _holdingsBox, _tradesBox, _dividendsBox, _priceBox,
+    ];
+    final old = [
+      for (final box in boxes)
+        <dynamic, dynamic>{for (final key in box.keys) key: box.get(key)},
+    ];
+    final next = <Map<dynamic, dynamic>>[
+      {for (final x in backup.accounts) x.id: x.toJson()},
+      {for (final x in backup.holdings) x.id: x.toJson()},
+      {for (final x in backup.trades) x.id: x.toJson()},
+      {for (final x in backup.dividends) x.id: x.toJson()},
+      {
+        for (final entry in backup.priceHistory.entries)
+          entry.key: [for (final point in entry.value) point.toJson()],
+      },
+    ];
+    try {
+      for (var i = 0; i < boxes.length; i++) {
+        await boxes[i].clear();
+        await boxes[i].putAll(next[i]);
+      }
+    } catch (_) {
+      for (var i = 0; i < boxes.length; i++) {
+        try {
+          await boxes[i].clear();
+          await boxes[i].putAll(old[i]);
+        } catch (_) {
+          // Storage may be unavailable: rethrow original failure below.
+        }
+      }
+      _reloadPrices();
+      await _changed();
+      rethrow;
+    }
+    _reloadPrices();
     await _changed();
   }
 
