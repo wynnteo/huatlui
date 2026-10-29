@@ -10,9 +10,11 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await settings.load();
   await repo.init();
+  await fx.init();
   runApp(const HuatLuiApp());
   // After the first frame, quietly refresh prices if they are stale.
   prices.refreshIfStale();
+  fx.refresh();
 }
 
 class HuatLuiApp extends StatelessWidget {

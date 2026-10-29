@@ -169,7 +169,7 @@ class SettingsScreen extends StatelessWidget {
 
     return SafeArea(
       child: ListenableBuilder(
-        listenable: Listenable.merge([settings, prices]),
+        listenable: Listenable.merge([settings, prices, fx]),
         builder: (context, _) {
           return ListView(
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
@@ -217,6 +217,36 @@ class SettingsScreen extends StatelessWidget {
                 value: prices.refreshing ? t.pricesUpdating : null,
                 onTap: prices.refreshing ? null : () => _refreshPrices(context),
               ),
+
+              SectionLabel('Exchange rates'),
+              const HairlineDivider(),
+              _SettingRow(
+                title: 'FX data source',
+                value: 'Frankfurter (daily)',
+              ),
+              _SettingRow(
+                title: 'FX rates as of',
+                value: fx.hasLiveData && fx.asOf != null
+                    ? '${fx.asOf!.year}-${fx.asOf!.month.toString().padLeft(2, '0')}-${fx.asOf!.day.toString().padLeft(2, '0')}${fx.isStale ? ' (cached)' : ''}'
+                    : 'Indicative only',
+              ),
+              _SettingRow(
+                title: 'Refresh exchange rates',
+                value: fx.refreshing ? 'Updating…' : null,
+                onTap: fx.refreshing ? null : () async {
+                  final ok = await fx.refresh(force: true);
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(ok ? 'FX rates updated' : 'FX update failed. Cached rates retained.'),
+                  ));
+                },
+              ),
+              if (fx.lastError != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6, bottom: 12),
+                  child: Text('FX: last refresh failed; showing ${fx.hasLiveData ? 'cached' : 'indicative'} values.',
+                    style: TextStyle(fontSize: 12, color: c.textSecondary)),
+                ),
 
               SectionLabel(t.settingsData),
               const HairlineDivider(),
