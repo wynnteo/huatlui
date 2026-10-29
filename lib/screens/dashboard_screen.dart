@@ -28,7 +28,7 @@ class DashboardScreen extends StatelessWidget {
 
     return SafeArea(
       child: ListenableBuilder(
-        listenable: Listenable.merge([repo, settings]),
+        listenable: Listenable.merge([repo, settings, fx]),
         builder: (context, _) {
           final base = settings.baseCurrency;
 
