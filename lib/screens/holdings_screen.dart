@@ -26,6 +26,129 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
   HoldingSort _sort = HoldingSort.symbol;
   bool _descending = false;
 
+  String _sortLabel(HoldingSort sort, bool zh) => switch (sort) {
+    HoldingSort.symbol => zh ? '代码' : 'Symbol',
+    HoldingSort.marketValue => zh ? '市值' : 'Market value',
+    HoldingSort.profitLoss => zh ? '浮动盈亏' : 'Unrealized P/L',
+    HoldingSort.profitLossPct => zh ? '盈亏比例' : 'P/L %',
+  };
+
+  Future<void> _showDisplayOptions(BuildContext context) async {
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
+    final t = AppLocalizations.of(context)!;
+    String? broker = _selectedAccountId;
+    AssetClass? asset = _selectedAssetClass;
+    HoldingSort sort = _sort;
+    bool descending = _descending;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, updateSheet) => SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(
+              24, 4, 24, 20 + MediaQuery.viewInsetsOf(sheetContext).bottom),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(zh ? '筛选与排序' : 'Sort & filter',
+                  style: Theme.of(sheetContext).textTheme.titleLarge),
+                const SizedBox(height: 20),
+                Text(zh ? '券商' : 'Broker',
+                  style: Theme.of(sheetContext).textTheme.titleSmall),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  isExpanded: true,
+                  value: broker ?? '_all',
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(), isDense: true),
+                  items: [
+                    DropdownMenuItem(value: '_all',
+                      child: Text(zh ? '全部券商' : 'All brokers')),
+                    for (final a in repo.accounts)
+                      DropdownMenuItem(value: a.id,
+                        child: Text(a.name, overflow: TextOverflow.ellipsis)),
+                  ],
+                  onChanged: (value) => updateSheet(
+                    () => broker = value == '_all' ? null : value),
+                ),
+                const SizedBox(height: 22),
+                Text(zh ? '资产类别' : 'Asset type',
+                  style: Theme.of(sheetContext).textTheme.titleSmall),
+                const SizedBox(height: 8),
+                Wrap(spacing: 7, runSpacing: 4, children: [
+                  ChoiceChip(
+                    label: Text(zh ? '全部' : 'All'),
+                    selected: asset == null,
+                    onSelected: (_) => updateSheet(() => asset = null)),
+                  for (final kind in AssetClass.values)
+                    ChoiceChip(
+                      label: Text(assetClassLabel(t, kind)),
+                      selected: asset == kind,
+                      onSelected: (_) => updateSheet(() => asset = kind)),
+                ]),
+                const SizedBox(height: 22),
+                Text(zh ? '排序方式' : 'Sort by',
+                  style: Theme.of(sheetContext).textTheme.titleSmall),
+                const SizedBox(height: 8),
+                Wrap(spacing: 7, runSpacing: 4, children: [
+                  for (final option in HoldingSort.values)
+                    ChoiceChip(
+                      label: Text(_sortLabel(option, zh)),
+                      selected: sort == option,
+                      onSelected: (_) => updateSheet(() => sort = option)),
+                ]),
+                const SizedBox(height: 12),
+                SegmentedButton<bool>(
+                  segments: [
+                    ButtonSegment(value: false,
+                      label: Text(zh ? '升序' : 'Ascending'),
+                      icon: const Icon(Icons.arrow_upward, size: 16)),
+                    ButtonSegment(value: true,
+                      label: Text(zh ? '降序' : 'Descending'),
+                      icon: const Icon(Icons.arrow_downward, size: 16)),
+                  ],
+                  selected: {descending},
+                  onSelectionChanged: (next) =>
+                    updateSheet(() => descending = next.first),
+                ),
+                const SizedBox(height: 26),
+                Row(children: [
+                  TextButton(
+                    onPressed: () => updateSheet(() {
+                      broker = null;
+                      asset = null;
+                      sort = HoldingSort.symbol;
+                      descending = false;
+                    }),
+                    child: Text(zh ? '重置' : 'Reset'),
+                  ),
+                  const Spacer(),
+                  FilledButton(
+                    onPressed: () {
+                      setState(() {
+                        _selectedAccountId = broker;
+                        _selectedAssetClass = asset;
+                        _sort = sort;
+                        _descending = descending;
+                      });
+                      Navigator.pop(sheetContext);
+                    },
+                    child: Text(zh ? '应用' : 'Apply'),
+                  ),
+                ]),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   /// A holding whose price was never fetched (or is a week old) is flagged,
   /// because its gain/loss is only as good as that price.
   String? _priceNote(AppLocalizations t, Position p) {
@@ -152,94 +275,45 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
                 );
               }),
 
-              // Filters apply to the holdings list only; alert banners above
-              // always show all affected holdings.
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 9,
-                runSpacing: 8,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 164,
-                    child: DropdownButtonFormField<String>(
-                      isExpanded: true,
-                      value: selectedAccountId ?? '_all',
-                      decoration: InputDecoration(
-                        labelText: zh ? '券商' : 'Broker',
-                        border: const OutlineInputBorder(),
-                        isDense: true,
-                      ),
-                      items: [
-                        DropdownMenuItem(value: '_all', child: Text(zh ? '所有券商' : 'All brokers')),
-                        for (final a in repo.accounts)
-                          DropdownMenuItem(value: a.id,
-                            child: Text(a.name, overflow: TextOverflow.ellipsis)),
-                      ],
-                      onChanged: (v) => setState(() => _selectedAccountId = v == '_all' ? null : v),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 155,
-                    child: DropdownButtonFormField<AssetClass?>(
-                      isExpanded: true,
-                      value: _selectedAssetClass,
-                      decoration: InputDecoration(
-                        labelText: zh ? '资产类别' : 'Asset type',
-                        border: const OutlineInputBorder(),
-                        isDense: true,
-                      ),
-                      items: [
-                        DropdownMenuItem<AssetClass?>(value: null, child: Text(zh ? '所有类别' : 'All types')),
-                        for (final a in AssetClass.values)
-                          DropdownMenuItem<AssetClass?>(
-                            value: a,
-                            child: Text(assetClassLabel(t, a), overflow: TextOverflow.ellipsis)),
-                      ],
-                      onChanged: (v) => setState(() => _selectedAssetClass = v),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 176,
-                    child: DropdownButtonFormField<HoldingSort>(
-                      isExpanded: true,
-                      value: _sort,
-                      decoration: InputDecoration(
-                        labelText: zh ? '排序' : 'Sort by',
-                        border: const OutlineInputBorder(),
-                        isDense: true,
-                      ),
-                      items: [
-                        DropdownMenuItem(value: HoldingSort.symbol, child: Text(zh ? '代码' : 'Symbol')),
-                        DropdownMenuItem(value: HoldingSort.marketValue, child: Text(zh ? '市值' : 'Market value')),
-                        DropdownMenuItem(value: HoldingSort.profitLoss, child: Text(zh ? '浮动盈亏' : 'Unrealized P/L')),
-                        DropdownMenuItem(value: HoldingSort.profitLossPct, child: Text(zh ? '盈亏百分比' : 'P/L %')),
-                      ],
-                      onChanged: (v) { if (v != null) setState(() => _sort = v); },
-                    ),
-                  ),
-                  IconButton.outlined(
-                    tooltip: _descending ? (zh ? '降序' : 'Descending') : (zh ? '升序' : 'Ascending'),
-                    onPressed: () => setState(() => _descending = !_descending),
-                    icon: Icon(_descending ? Icons.arrow_downward : Icons.arrow_upward),
-                  ),
-                  if (_selectedAccountId != null || _selectedAssetClass != null || _sort != HoldingSort.symbol || _descending)
-                    TextButton(
-                      onPressed: () => setState(() {
-                        _selectedAccountId = null;
-                        _selectedAssetClass = null;
-                        _sort = HoldingSort.symbol;
-                        _descending = false;
-                      }),
-                      child: Text(zh ? '重置' : 'Reset'),
-                    ),
-                ],
+              // Alert and review cards always remain above display options.
+              // This breathing room keeps the toolbar visually separate.
+              const SizedBox(height: 26),
+              Row(children: [
+                Expanded(
+                  child: Text(zh ? '我的持仓' : 'My holdings',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700)),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () => _showDisplayOptions(context),
+                  icon: const Icon(Icons.tune, size: 18),
+                  label: Text(zh ? '筛选 / 排序' : 'Filter & sort'),
+                ),
+              ]),
+              const SizedBox(height: 8),
+              Text(
+                zh ? '显示 ${visible.length} / ${open.length} 项 · ${_sortLabel(_sort, zh)}'
+                   : '${visible.length} of ${open.length} holdings · ${_sortLabel(_sort, zh)}',
+                style: TextStyle(fontSize: 12, color: c.textTertiary),
               ),
-              const SizedBox(height: 10),
-              Text(zh ? '显示 ${visible.length} / ${open.length} 项持仓' :
-                'Showing ${visible.length} of ${open.length} holdings',
-                style: TextStyle(fontSize: 12, color: c.textTertiary)),
-              const SizedBox(height: 6),
+              if (selectedAccountId != null || _selectedAssetClass != null) ...[
+                const SizedBox(height: 7),
+                Wrap(spacing: 6, runSpacing: 4, children: [
+                  if (selectedAccountId != null)
+                    InputChip(
+                      label: Text(repo.accounts
+                        .where((a) => a.id == selectedAccountId)
+                        .first.name),
+                      onDeleted: () => setState(() => _selectedAccountId = null),
+                    ),
+                  if (_selectedAssetClass != null)
+                    InputChip(
+                      label: Text(assetClassLabel(t, _selectedAssetClass!)),
+                      onDeleted: () => setState(() => _selectedAssetClass = null),
+                    ),
+                ]),
+              ],
+              const SizedBox(height: 15),
               if (open.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 4),
