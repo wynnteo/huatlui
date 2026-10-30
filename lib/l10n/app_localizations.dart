@@ -62,7 +62,8 @@ import 'app_localizations_zh.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -70,7 +71,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -82,7 +84,8 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
     delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
@@ -369,13 +372,15 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{label} is {current}% of your portfolio, above your {target}% target.'**
-  String concentrationRiskOverTarget(String label, String current, String target);
+  String concentrationRiskOverTarget(
+      String label, String current, String target);
 
   /// No description provided for @concentrationRiskUnderTarget.
   ///
   /// In en, this message translates to:
   /// **'{label} is {current}% of your portfolio, below your {target}% target.'**
-  String concentrationRiskUnderTarget(String label, String current, String target);
+  String concentrationRiskUnderTarget(
+      String label, String current, String target);
 
   /// No description provided for @concentrationRiskAbsolute.
   ///
@@ -1313,70 +1318,195 @@ abstract class AppLocalizations {
   /// **'No transactions for this holding.'**
   String get detailEmpty;
 
+  /// No description provided for @fxSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Exchange rates'**
   String get fxSection;
 
+  /// No description provided for @fxSource.
+  ///
+  /// In en, this message translates to:
+  /// **'FX data source'**
   String get fxSource;
 
+  /// No description provided for @fxDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Frankfurter (daily)'**
   String get fxDaily;
 
+  /// No description provided for @fxAsOf.
+  ///
+  /// In en, this message translates to:
+  /// **'FX rates as of'**
   String get fxAsOf;
 
+  /// No description provided for @fxCached.
+  ///
+  /// In en, this message translates to:
+  /// **' (cached)'**
   String get fxCached;
 
+  /// No description provided for @fxIndicative.
+  ///
+  /// In en, this message translates to:
+  /// **'Indicative only'**
   String get fxIndicative;
 
+  /// No description provided for @fxRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh exchange rates'**
   String get fxRefresh;
 
+  /// No description provided for @fxRefreshing.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating…'**
   String get fxRefreshing;
 
+  /// No description provided for @fxUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'FX rates updated'**
   String get fxUpdated;
 
+  /// No description provided for @fxRefreshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'FX update failed. Cached rates retained.'**
   String get fxRefreshFailed;
 
+  /// No description provided for @fxFailedCached.
+  ///
+  /// In en, this message translates to:
+  /// **'FX: last refresh failed; showing cached values.'**
   String get fxFailedCached;
 
+  /// No description provided for @fxFailedIndicative.
+  ///
+  /// In en, this message translates to:
+  /// **'FX: last refresh failed; showing indicative values.'**
   String get fxFailedIndicative;
 
+  /// No description provided for @fxDashboardIndicative.
+  ///
+  /// In en, this message translates to:
+  /// **'FX: indicative offline rates (not current market data)'**
   String get fxDashboardIndicative;
 
+  /// No description provided for @fxDashboardCached.
+  ///
+  /// In en, this message translates to:
+  /// **'FX: cached rates as of'**
   String get fxDashboardCached;
 
+  /// No description provided for @fxDashboardReference.
+  ///
+  /// In en, this message translates to:
+  /// **'FX: daily reference rates as of'**
   String get fxDashboardReference;
 
+  /// No description provided for @pricesSomeStale.
+  ///
+  /// In en, this message translates to:
+  /// **'Some prices need updating'**
   String get pricesSomeStale;
 
+  /// No description provided for @backupSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save full backup (JSON)'**
   String get backupSave;
 
+  /// No description provided for @backupRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore full backup (JSON)'**
   String get backupRestore;
 
+  /// No description provided for @backupSaveDialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Save HuatLui backup'**
   String get backupSaveDialog;
 
+  /// No description provided for @backupSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup saved. Keep it in a secure location.'**
   String get backupSaved;
 
+  /// No description provided for @backupSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup failed:'**
   String get backupSaveFailed;
 
+  /// No description provided for @backupRestoreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore portfolio backup?'**
   String get backupRestoreTitle;
 
+  /// No description provided for @backupReplaceWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This will REPLACE your current portfolio data on this device.'**
   String get backupReplaceWarning;
 
+  /// No description provided for @backupAccounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts'**
   String get backupAccounts;
 
+  /// No description provided for @backupHoldings.
+  ///
+  /// In en, this message translates to:
+  /// **'Holdings'**
   String get backupHoldings;
 
+  /// No description provided for @backupTrades.
+  ///
+  /// In en, this message translates to:
+  /// **'Trades'**
   String get backupTrades;
 
+  /// No description provided for @backupDividends.
+  ///
+  /// In en, this message translates to:
+  /// **'Dividends'**
   String get backupDividends;
 
+  /// No description provided for @backupRestoreWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Create and save a backup of your current portfolio first. Device lock preferences will not be changed.'**
   String get backupRestoreWarning;
 
+  /// No description provided for @backupReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace & restore'**
   String get backupReplace;
 
+  /// No description provided for @backupRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio backup restored successfully.'**
   String get backupRestored;
 
+  /// No description provided for @backupRestoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore failed:'**
   String get backupRestoreFailed;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -1385,25 +1515,25 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en': return AppLocalizationsEn();
-    case 'zh': return AppLocalizationsZh();
+    case 'en':
+      return AppLocalizationsEn();
+    case 'zh':
+      return AppLocalizationsZh();
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

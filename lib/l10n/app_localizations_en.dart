@@ -48,7 +48,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardEmptyTitle => 'No investments yet';
 
   @override
-  String get dashboardEmptyBody => 'Add your first buy, or load sample data to see how HuatLui works.';
+  String get dashboardEmptyBody =>
+      'Add your first buy, or load sample data to see how HuatLui works.';
 
   @override
   String get loadDemoData => 'Load sample data';
@@ -57,7 +58,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clearAllData => 'Clear all data';
 
   @override
-  String get clearAllDataConfirm => 'This permanently deletes every account, holding, transaction and dividend on this device.';
+  String get clearAllDataConfirm =>
+      'This permanently deletes every account, holding, transaction and dividend on this device.';
 
   @override
   String get cancel => 'Cancel';
@@ -148,12 +150,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String concentrationRiskOverTarget(String label, String current, String target) {
+  String concentrationRiskOverTarget(
+      String label, String current, String target) {
     return '$label is $current% of your portfolio, above your $target% target.';
   }
 
   @override
-  String concentrationRiskUnderTarget(String label, String current, String target) {
+  String concentrationRiskUnderTarget(
+      String label, String current, String target) {
     return '$label is $current% of your portfolio, below your $target% target.';
   }
 
@@ -254,7 +258,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pickHoldingHint => 'Pick an existing holding';
 
   @override
-  String get errAccountRequired => 'Choose an account or enter a new account name.';
+  String get errAccountRequired =>
+      'Choose an account or enter a new account name.';
 
   @override
   String get errSymbolRequired => 'Enter a symbol.';
@@ -270,7 +275,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get errDividendNeedsHolding => 'To record a dividend, pick a holding you already own.';
+  String get errDividendNeedsHolding =>
+      'To record a dividend, pick a holding you already own.';
 
   @override
   String get errFxRate => 'Enter a valid FX rate.';
@@ -288,7 +294,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get copyCsvTemplate => 'Copy CSV template';
 
   @override
-  String get templateCopied => 'Template copied. Paste it into Excel or Google Sheets.';
+  String get templateCopied =>
+      'Template copied. Paste it into Excel or Google Sheets.';
 
   @override
   String get importPreviewTitle => 'Ready to import';
@@ -436,10 +443,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chartCost => 'Cost';
 
   @override
-  String get chartNote => 'Past values use today\'s exchange rates. Unit trusts fill in as you refresh prices.';
+  String get chartNote =>
+      'Past values use today\'s exchange rates. Unit trusts fill in as you refresh prices.';
 
   @override
-  String get chartNeedsData => 'Not enough history yet. Pull down on Overview or Holdings to refresh prices.';
+  String get chartNeedsData =>
+      'Not enough history yet. Pull down on Overview or Holdings to refresh prices.';
 
   @override
   String get chartTotal => 'Total';
@@ -490,7 +499,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get exportCopied => 'No file dialog available. The CSV was copied to the clipboard instead.';
+  String get exportCopied =>
+      'No file dialog available. The CSV was copied to the clipboard instead.';
 
   @override
   String get filterDate => 'Date';
@@ -578,10 +588,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsLock => 'Biometric unlock';
 
   @override
-  String get settingsLockHelp => 'Uses your fingerprint, face, or the phone’s screen lock. HuatLui locks again after 30 seconds in the background.';
+  String get settingsLockHelp =>
+      'Uses your fingerprint, face, or the phone’s screen lock. HuatLui locks again after 30 seconds in the background.';
 
   @override
-  String get lockUnavailable => 'Set up a fingerprint, face or screen lock on this phone first.';
+  String get lockUnavailable =>
+      'Set up a fingerprint, face or screen lock on this phone first.';
 
   @override
   String get filterAll => 'All';
@@ -614,19 +626,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chartHowCostTitle => 'Cost (dashed line)';
 
   @override
-  String get chartHowCostBody => 'What you paid for the holdings you still own. Each buy adds quantity × price plus fees, converted at that trade’s own exchange rate. A sale removes the same share of the cost (average-cost method), so fully sold positions drop out.';
+  String get chartHowCostBody =>
+      'What you paid for the holdings you still own. Each buy adds quantity × price plus fees, converted at that trade’s own exchange rate. A sale removes the same share of the cost (average-cost method), so fully sold positions drop out.';
 
   @override
   String get chartHowValueTitle => 'Value (solid line)';
 
   @override
-  String get chartHowValueBody => 'For each day: the units you held that day (rebuilt from your transactions) × that day’s closing price, converted at today’s exchange rate. Weekends and holidays reuse the last close. Unit trusts have no price history, so they step between your trade prices and the prices fetched since you started refreshing.';
+  String get chartHowValueBody =>
+      'For each day: the units you held that day (rebuilt from your transactions) × that day’s closing price, converted at today’s exchange rate. Weekends and holidays reuse the last close. Unit trusts have no price history, so they step between your trade prices and the prices fetched since you started refreshing.';
 
   @override
   String get chartHowGapTitle => 'The gap between them';
 
   @override
-  String get chartHowGapBody => 'That is your unrealised gain or loss. Dividends and gains already locked in by selling are not in this chart; see Breakdown below and the Income tab.';
+  String get chartHowGapBody =>
+      'That is your unrealised gain or loss. Dividends and gains already locked in by selling are not in this chart; see Breakdown below and the Income tab.';
 
   @override
   String get settingsAbout => 'About';
@@ -643,7 +658,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editEntry => 'Edit entry';
 
   @override
-  String get errBreaksHoldings => 'That would leave a later sale larger than the units you held. Change or delete the sale first.';
+  String get errBreaksHoldings =>
+      'That would leave a later sale larger than the units you held. Change or delete the sale first.';
 
   @override
   String get holdingDetails => 'Details';
@@ -712,13 +728,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fxRefreshFailed => 'FX update failed. Cached rates retained.';
 
   @override
-  String get fxFailedCached => 'FX: last refresh failed; showing cached values.';
+  String get fxFailedCached =>
+      'FX: last refresh failed; showing cached values.';
 
   @override
-  String get fxFailedIndicative => 'FX: last refresh failed; showing indicative values.';
+  String get fxFailedIndicative =>
+      'FX: last refresh failed; showing indicative values.';
 
   @override
-  String get fxDashboardIndicative => 'FX: indicative offline rates (not current market data)';
+  String get fxDashboardIndicative =>
+      'FX: indicative offline rates (not current market data)';
 
   @override
   String get fxDashboardCached => 'FX: cached rates as of';
@@ -748,7 +767,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backupRestoreTitle => 'Restore portfolio backup?';
 
   @override
-  String get backupReplaceWarning => 'This will REPLACE your current portfolio data on this device.';
+  String get backupReplaceWarning =>
+      'This will REPLACE your current portfolio data on this device.';
 
   @override
   String get backupAccounts => 'Accounts';
@@ -763,7 +783,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backupDividends => 'Dividends';
 
   @override
-  String get backupRestoreWarning => 'Create and save a backup of your current portfolio first. Device lock preferences will not be changed.';
+  String get backupRestoreWarning =>
+      'Create and save a backup of your current portfolio first. Device lock preferences will not be changed.';
 
   @override
   String get backupReplace => 'Replace & restore';

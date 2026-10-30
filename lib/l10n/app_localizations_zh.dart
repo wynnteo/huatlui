@@ -148,12 +148,14 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String concentrationRiskOverTarget(String label, String current, String target) {
+  String concentrationRiskOverTarget(
+      String label, String current, String target) {
     return '$label 占组合 $current%，高于你设的目标 $target%。';
   }
 
   @override
-  String concentrationRiskUnderTarget(String label, String current, String target) {
+  String concentrationRiskUnderTarget(
+      String label, String current, String target) {
     return '$label 占组合 $current%，低于你设的目标 $target%。';
   }
 
@@ -614,13 +616,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chartHowCostTitle => '成本（虚线）';
 
   @override
-  String get chartHowCostBody => '你仍持有的资产的买入成本。每笔买入加上 数量 × 价格 + 手续费，并按该笔交易当时的汇率换算。卖出时按比例扣减成本（平均成本法），因此已全部卖出的持仓不再计入。';
+  String get chartHowCostBody =>
+      '你仍持有的资产的买入成本。每笔买入加上 数量 × 价格 + 手续费，并按该笔交易当时的汇率换算。卖出时按比例扣减成本（平均成本法），因此已全部卖出的持仓不再计入。';
 
   @override
   String get chartHowValueTitle => '市值（实线）';
 
   @override
-  String get chartHowValueBody => '每一天：当天持有的数量（根据你的交易重建）× 当天收盘价，并按今天的汇率换算。周末和假日沿用上一个收盘价。基金没有历史价格，因此按你的交易价格逐步变化，并使用你开始刷新价格之后获取的价格。';
+  String get chartHowValueBody =>
+      '每一天：当天持有的数量（根据你的交易重建）× 当天收盘价，并按今天的汇率换算。周末和假日沿用上一个收盘价。基金没有历史价格，因此按你的交易价格逐步变化，并使用你开始刷新价格之后获取的价格。';
 
   @override
   String get chartHowGapTitle => '两条线之间的差距';
