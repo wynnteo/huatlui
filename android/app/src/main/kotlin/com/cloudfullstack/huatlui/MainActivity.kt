@@ -1,4 +1,4 @@
-package com.example.huatlui
+package com.cloudfullstack.huatlui
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 
