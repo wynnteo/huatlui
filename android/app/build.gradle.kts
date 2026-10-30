@@ -24,7 +24,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.cloudfullstack.huatlui"
+        applicationId = "cloudfullstack.dev"  // wrong configured in console
         minSdk = 36
         targetSdk = 37
         versionCode = flutter.versionCode
