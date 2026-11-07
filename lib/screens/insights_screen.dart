@@ -219,6 +219,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     BuildContext context, {
     required List<Dividend> dividends,
     required List<Position> positions,
+    required AssetClass? selectedClass,
     required PortfolioSummary s,
     required InsightsService ins,
     required String base,
@@ -246,27 +247,56 @@ class _InsightsScreenState extends State<InsightsScreen> {
     final prevTotal = yoy.lastYear.fold<double>(0, (a, v) => a + v);
     final inYear = [for (final d in dividends) if (d.paymentDate.year == year) d];
     final payers = ins.dividendsBySymbol(inYear);
+    // All shows where income came from by asset class, not by symbol.
+    // A selected class retains the familiar individual-payer chart.
+    final incomeClasses = selectedClass == null
+        ? ins.dividendsByAssetClass(inYear, repo.holdings)
+        : const <AssetClassIncome>[];
     final maxPay = payers.isEmpty ? 0.0 : payers.first.amountBase;
     final yieldPct = (year == thisYear && s.costBase > 0) ? yearTotal / s.costBase * 100 : null;
 
-    // Donut: five biggest payers that year, the rest folded into "Other".
     final donut = <DonutSlice>[];
-    for (var i = 0; i < payers.length && i < 5; i++) {
-      donut.add(DonutSlice(
-        label: payers[i].symbol,
-        value: payers[i].amountBase,
-        color: ChartPalette.color(context, i),
-        detail: yearTotal > 0 ? '${(payers[i].amountBase / yearTotal * 100).toStringAsFixed(1)}%' : '',
-      ));
-    }
-    if (payers.length > 5) {
-      final rest = payers.skip(5).fold<double>(0, (a, p) => a + p.amountBase);
-      donut.add(DonutSlice(
-        label: t.othersLabel,
-        value: rest,
-        color: c.textTertiary,
-        detail: yearTotal > 0 ? '${(rest / yearTotal * 100).toStringAsFixed(1)}%' : '',
-      ));
+    if (selectedClass == null) {
+      // There are only a handful of asset classes: show all nonzero income
+      // categories (no synthetic "Other" category hiding unit trusts).
+      for (final entry in incomeClasses) {
+        if (entry.amountBase <= 0) continue;
+        donut.add(DonutSlice(
+          label: assetClassLabel(t, entry.assetClass),
+          value: entry.amountBase,
+          color: ChartPalette.color(context, donut.length),
+          detail: yearTotal > 0
+              ? '${(entry.amountBase / yearTotal * 100).toStringAsFixed(1)}%'
+              : '',
+        ));
+      }
+    } else {
+      // Drilled into one asset class: keep the existing top-payer behavior.
+      for (var i = 0; i < payers.length && i < 5; i++) {
+        if (payers[i].amountBase <= 0) continue;
+        donut.add(DonutSlice(
+          label: payers[i].symbol,
+          value: payers[i].amountBase,
+          color: ChartPalette.color(context, donut.length),
+          detail: yearTotal > 0
+              ? '${(payers[i].amountBase / yearTotal * 100).toStringAsFixed(1)}%'
+              : '',
+        ));
+      }
+      if (payers.length > 5) {
+        final rest = payers.skip(5)
+            .fold<double>(0, (a, p) => a + p.amountBase);
+        if (rest > 0) {
+          donut.add(DonutSlice(
+            label: t.othersLabel,
+            value: rest,
+            color: c.textTertiary,
+            detail: yearTotal > 0
+                ? '${(rest / yearTotal * 100).toStringAsFixed(1)}%'
+                : '',
+          ));
+        }
+      }
     }
 
     return [
@@ -294,8 +324,26 @@ class _InsightsScreenState extends State<InsightsScreen> {
       SectionLabel(t.dividendsYoY),
       YoYBars(thisYear: yoy.thisYear, lastYear: yoy.lastYear, year: year, format: (v) => CurrencyText.formatAmount(v, base)),
       if (payers.isNotEmpty) ...[
-        SectionLabel(t.incomeSources),
-        DonutChart(slices: donut, totalText: CurrencyText.formatAmount(yearTotal, base), totalCaption: t.chartTotal),
+        SectionLabel(selectedClass == null ? t.byAssetClass : t.incomeSources),
+        if (donut.isNotEmpty)
+          DonutChart(
+            key: ValueKey('income-${selectedClass?.name ?? 'all'}-$year'),
+            slices: donut,
+            totalText: CurrencyText.formatAmount(yearTotal, base),
+            totalCaption: t.chartTotal,
+          ),
+        if (selectedClass == null) ...[
+          const SizedBox(height: 10),
+          // A labeled amount list makes UT vs Stock dividend comparisons
+          // readable without trying to tap narrow chart segments.
+          for (final entry in incomeClasses)
+            _KeyValue(
+              label: assetClassLabel(t, entry.assetClass),
+              text: CurrencyText.formatAmount(entry.amountBase, base),
+              color: c.textPrimary,
+            ),
+          const SizedBox(height: 8),
+        ],
         SectionLabel(t.byHolding),
         for (final p in payers)
           BarRow(
@@ -362,7 +410,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
               );
               break;
             case 1:
-              body = _income(context, dividends: dividends, positions: positions, s: s, ins: ins, base: base, all: all);
+              body = _income(context, dividends: dividends, positions: positions, selectedClass: cls, s: s, ins: ins, base: base, all: all);
               break;
             default:
               body = [
