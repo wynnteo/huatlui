@@ -1,5 +1,6 @@
 import '../models/enums.dart';
 import '../models/dividend.dart';
+import '../models/holding_record.dart';
 import '../models/trade.dart';
 import 'fx_service.dart';
 import 'portfolio_service.dart';
@@ -27,6 +28,13 @@ class DividendPayer {
   final String symbol;
   final double amountBase;
   const DividendPayer(this.symbol, this.amountBase);
+}
+
+/// Net income in the user's base currency, grouped by asset class.
+class AssetClassIncome {
+  final AssetClass assetClass;
+  final double amountBase;
+  const AssetClassIncome(this.assetClass, this.amountBase);
 }
 
 /// This year's and last year's dividends, month by month (index 0 = January).
@@ -138,6 +146,37 @@ class InsightsService {
     final list = [for (final e in map.entries) DividendPayer(e.key, e.value)];
     list.sort((a, b) => b.amountBase.compareTo(a.amountBase));
     return list;
+  }
+
+  /// Calendar-year net dividend income grouped by recorded asset class.
+  /// Use account+symbol keys so identical symbols at different brokers retain
+  /// their own classification. Missing holding metadata is grouped as Other,
+  /// never silently omitted from income totals.
+  List<AssetClassIncome> dividendsByAssetClass(
+    List<Dividend> dividends,
+    List<HoldingRecord> holdings,
+  ) {
+    final classes = {
+      for (final h in holdings) h.key: h.assetClass,
+    };
+    final totals = <AssetClass, double>{};
+    for (final d in dividends) {
+      final key = HoldingRecord.keyOf(d.accountId, d.symbol);
+      final category = classes[key] ?? AssetClass.other;
+      totals[category] = (totals[category] ?? 0) +
+          _hist(d.netAmount, d.fxRate, d.fxBase);
+    }
+    final result = [
+      for (final entry in totals.entries)
+        AssetClassIncome(entry.key, entry.value),
+    ];
+    result.sort((a, b) {
+      final amountOrder = b.amountBase.compareTo(a.amountBase);
+      return amountOrder != 0
+          ? amountOrder
+          : a.assetClass.index.compareTo(b.assetClass.index);
+    });
+    return result;
   }
 
   /// Only says something when there is something worth saying, so a quiet
