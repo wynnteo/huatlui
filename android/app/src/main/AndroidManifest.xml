@@ -4,6 +4,10 @@
         android:label="HuatLui"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- AdMob Android App ID (not the banner ad unit ID). -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-6586968137131686~1931017894" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
