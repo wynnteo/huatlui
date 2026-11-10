@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'app_scope.dart';
 import 'l10n/app_localizations.dart';
@@ -8,6 +10,9 @@ import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    await MobileAds.instance.initialize();
+  }
   await settings.load();
   await repo.init();
   await fx.init();
