@@ -3,6 +3,7 @@ import '../app_scope.dart';
 import '../services/activity.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/ui_helpers.dart';
+import '../widgets/android_banner_ad.dart';
 import 'dashboard_screen.dart';
 import 'entry_form_screen.dart';
 import 'holdings_screen.dart';
@@ -60,6 +61,7 @@ class _MainShellState extends State<MainShell> {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          const AndroidBannerAd(),
           const HairlineDivider(),
           NavigationBar(
             selectedIndex: _index,
