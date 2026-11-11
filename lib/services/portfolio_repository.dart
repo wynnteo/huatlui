@@ -9,6 +9,7 @@ import 'csv_import.dart';
 import 'activity.dart';
 import 'demo_data.dart';
 import 'portfolio_backup.dart';
+import 'portfolio_write_queue.dart';
 
 /// Local storage for the POC. Everything is saved as plain JSON maps in
 /// Hive boxes (no type adapters, so no build_runner step), and kept in
@@ -22,6 +23,39 @@ class PortfolioRepository extends ChangeNotifier {
   late final Box<dynamic> _tradesBox;
   late final Box<dynamic> _dividendsBox;
   late final Box<dynamic> _priceBox;
+  late final Box<dynamic> _restoreJournal;
+  final PortfolioWriteQueue _writes = PortfolioWriteQueue();
+  int _dataGeneration = 0;
+  int get dataGeneration => _dataGeneration;
+
+  List<Box<dynamic>> get _dataBoxes => [
+    _accountsBox, _holdingsBox, _tradesBox, _dividendsBox, _priceBox,
+  ];
+
+  /// Persistent undo record written before touching any portfolio box.
+  /// If the app is killed during replacement, initialization restores it.
+  Future<void> _recoverInterruptedRestore() async {
+    final entry = _restoreJournal.get('pending');
+    if (entry == null) return;
+    if (entry is! Map) throw StateError('Invalid restore recovery journal');
+    if (!shouldRollbackRestoreJournal(entry['state']) && entry['state'] == 'committed') {
+      await _restoreJournal.delete('pending');
+      return;
+    }
+    if (entry['state'] != 'prepared' || entry['snapshots'] is! List ||
+        (entry['snapshots'] as List).length != _dataBoxes.length) {
+      throw StateError('Invalid restore recovery journal');
+    }
+    final snapshots = entry['snapshots'] as List;
+    for (var i = 0; i < _dataBoxes.length; i++) {
+      final snapshot = snapshots[i];
+      if (snapshot is! Map) throw StateError('Corrupt restore recovery snapshot');
+      final copy = <dynamic, dynamic>{for (final key in snapshot.keys) key: snapshot[key]};
+      await _dataBoxes[i].clear();
+      await _dataBoxes[i].putAll(copy);
+    }
+    await _restoreJournal.delete('pending');
+  }
 
   List<Account> accounts = [];
   List<HoldingRecord> holdings = [];
@@ -39,6 +73,8 @@ class PortfolioRepository extends ChangeNotifier {
     _tradesBox = await Hive.openBox<dynamic>('trades');
     _dividendsBox = await Hive.openBox<dynamic>('dividends');
     _priceBox = await Hive.openBox<dynamic>('price_history');
+    _restoreJournal = await Hive.openBox<dynamic>('portfolio_restore_journal_v1');
+    await _recoverInterruptedRestore();
     _reload();
     _reloadPrices();
   }
@@ -70,7 +106,9 @@ class PortfolioRepository extends ChangeNotifier {
 
   /// Saves a whole price refresh in one go: new prices on the holdings, and
   /// the day-by-day history merged into what is already stored (newer wins).
-  Future<void> applyPriceRefresh(List<HoldingRecord> updatedHoldings, Map<String, List<PricePoint>> history) async {
+  Future<void> applyPriceRefresh(List<HoldingRecord> updatedHoldings, Map<String, List<PricePoint>> history, {int? expectedGeneration}) async {
+    return _writes.run(() async {
+      if (expectedGeneration != null && expectedGeneration != _dataGeneration) return;
     for (final h in updatedHoldings) {
       await _holdingsBox.put(h.id, h.toJson());
     }
@@ -89,6 +127,8 @@ class PortfolioRepository extends ChangeNotifier {
     }
     _reloadPrices();
     await _changed();
+  
+    });
   }
 
   Future<void> _changed() async {
@@ -106,6 +146,7 @@ class PortfolioRepository extends ChangeNotifier {
 
   /// Writes everything from a CSV import in one go (one reload, one notify).
   Future<void> applyImport(ImportPlan plan) async {
+    return _writes.run(() async {
     // Validate the complete post-import history before making any writes.
     if (!tradesAreConsistent([...trades, ...plan.trades])) {
       throw StateError('Import would create a sale exceeding available shares');
@@ -123,39 +164,60 @@ class PortfolioRepository extends ChangeNotifier {
       await _dividendsBox.put(d.id, d.toJson());
     }
     await _changed();
+  
+    });
   }
 
   Future<void> putAccount(Account a) async {
+    return _writes.run(() async {
     await _accountsBox.put(a.id, a.toJson());
     await _changed();
+  
+    });
   }
 
   Future<void> putHolding(HoldingRecord h) async {
+    return _writes.run(() async {
     await _holdingsBox.put(h.id, h.toJson());
     await _changed();
+  
+    });
   }
 
   Future<void> putTrade(Trade t) async {
+    return _writes.run(() async {
     await _tradesBox.put(t.id, t.toJson());
     await _changed();
+  
+    });
   }
 
   Future<void> putDividend(Dividend d) async {
+    return _writes.run(() async {
     await _dividendsBox.put(d.id, d.toJson());
     await _changed();
+  
+    });
   }
 
   Future<void> deleteTrade(String id) async {
+    return _writes.run(() async {
     await _tradesBox.delete(id);
     await _changed();
+  
+    });
   }
 
   Future<void> deleteDividend(String id) async {
+    return _writes.run(() async {
     await _dividendsBox.delete(id);
     await _changed();
+  
+    });
   }
 
   Future<void> loadDemo() async {
+    return _writes.run(() async {
     final demo = DemoData.build();
     for (final a in demo.accounts) {
       await _accountsBox.put(a.id, a.toJson());
@@ -170,58 +232,70 @@ class PortfolioRepository extends ChangeNotifier {
       await _dividendsBox.put(d.id, d.toJson());
     }
     await _changed();
+  
+    });
   }
 
-  /// Replace device data with a fully validated backup. Keep the previous
-  /// boxes in memory for a best-effort rollback if a disk write fails.
+  /// Crash-resilient restore using a persistent undo journal.
+  /// A prepared journal is recovered on the next launch before loading data.
   Future<void> restoreBackup(PortfolioBackup backup) async {
     backup.validate();
-    final boxes = <Box<dynamic>>[
-      _accountsBox, _holdingsBox, _tradesBox, _dividendsBox, _priceBox,
-    ];
-    final old = [
-      for (final box in boxes)
-        <dynamic, dynamic>{for (final key in box.keys) key: box.get(key)},
-    ];
-    final next = <Map<dynamic, dynamic>>[
-      {for (final x in backup.accounts) x.id: x.toJson()},
-      {for (final x in backup.holdings) x.id: x.toJson()},
-      {for (final x in backup.trades) x.id: x.toJson()},
-      {for (final x in backup.dividends) x.id: x.toJson()},
-      {
-        for (final entry in backup.priceHistory.entries)
-          entry.key: [for (final point in entry.value) point.toJson()],
-      },
-    ];
-    try {
-      for (var i = 0; i < boxes.length; i++) {
-        await boxes[i].clear();
-        await boxes[i].putAll(next[i]);
-      }
-    } catch (_) {
-      for (var i = 0; i < boxes.length; i++) {
-        try {
+    return _writes.run(() async {
+      // Resolve a previously interrupted operation before starting another.
+      await _recoverInterruptedRestore();
+      final boxes = _dataBoxes;
+      final old = [
+        for (final box in boxes)
+          <dynamic, dynamic>{for (final key in box.keys) key: box.get(key)},
+      ];
+      final next = <Map<dynamic, dynamic>>[
+        {for (final x in backup.accounts) x.id: x.toJson()},
+        {for (final x in backup.holdings) x.id: x.toJson()},
+        {for (final x in backup.trades) x.id: x.toJson()},
+        {for (final x in backup.dividends) x.id: x.toJson()},
+        {
+          for (final entry in backup.priceHistory.entries)
+            entry.key: [for (final point in entry.value) point.toJson()],
+        },
+      ];
+      await _restoreJournal.put('pending', {
+        'state': 'prepared',
+        'snapshots': old,
+      });
+      try {
+        for (var i = 0; i < boxes.length; i++) {
           await boxes[i].clear();
-          await boxes[i].putAll(old[i]);
-        } catch (_) {
-          // Storage may be unavailable: rethrow original failure below.
+          await boxes[i].putAll(next[i]);
         }
+        // Mark the replacement committed before deleting its undo record.
+        await _restoreJournal.put('pending', {'state': 'committed'});
+        _dataGeneration++;
+        _reloadPrices();
+        await _changed();
+      } catch (_) {
+        // Preserve the journal if recovery also fails: next launch retries.
+        await _recoverInterruptedRestore();
+        _reloadPrices();
+        await _changed();
+        rethrow;
       }
-      _reloadPrices();
-      await _changed();
-      rethrow;
-    }
-    _reloadPrices();
-    await _changed();
+      // A crash after committing but before deleting the marker keeps the new
+      // data; the startup recovery removes only the committed marker.
+      await _restoreJournal.delete('pending');
+    });
   }
 
   Future<void> clearAll() async {
+    return _writes.run(() async {
     await _accountsBox.clear();
     await _holdingsBox.clear();
     await _tradesBox.clear();
     await _dividendsBox.clear();
     await _priceBox.clear();
+    _dataGeneration++;
     _reloadPrices();
     await _changed();
+  
+    });
   }
 }
